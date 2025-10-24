@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from "typeorm";
+import { Pedido } from "src/pedido/entities/pedido.entity";
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToOne } from "typeorm";
 import { Double } from "typeorm/browser";
 
 enum Status {
@@ -18,23 +19,26 @@ export class Pagamento {
     @PrimaryGeneratedColumn()
     idPag: number;
 
-    @Column({nullable: false})
+    @Column({ nullable: false })
     valor: Double;
 
     @Column({
-            type: 'enum',
-            enum: Status,
-            default: Status.PENDENTE,
-        })
-        statusPag: Status;
+        type: 'enum',
+        enum: Status,
+        default: Status.PENDENTE,
+    })
+    statusPag: Status;
 
     @Column({
-            type: 'enum',
-            enum: Metodo,
-            default: Metodo.BOLETO,
-        })
-        metodoPag: Metodo;
+        type: 'enum',
+        enum: Metodo,
+        default: Metodo.BOLETO,
+    })
+    metodoPag: Metodo;
 
     @CreateDateColumn()
     dataPag: Date;
+
+    @OneToOne(() => Pedido, pedido => pedido.pagamento)
+    pedido: Pedido;
 }
