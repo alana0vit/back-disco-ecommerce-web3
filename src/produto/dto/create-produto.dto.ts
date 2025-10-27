@@ -18,11 +18,13 @@ export class CreateProdutoDto {
   descricao: string;
 
   @Type(() => Number)
+  @IsNotEmpty()
   @IsNumber()
   @Min(0)
   preco: number;
 
   @Type(() => Number)
+  @IsNotEmpty()
   @IsNumber()
   @Min(0)
   estoque: number;

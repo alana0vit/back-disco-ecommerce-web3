@@ -59,7 +59,7 @@ export class ProdutoController {
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string): Promise<void> {
     return await this.produtoService.remove(+id);
   }
 }
