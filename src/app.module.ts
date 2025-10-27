@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ProdutoModule } from './produto/produto.module';
 import { ClienteModule } from './cliente/cliente.module';
 import { EnderecoModule } from './endereco/endereco.module';
@@ -26,15 +27,22 @@ import { ItemPedidoService } from './item-pedido/item-pedido.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: 'localhost',
-      port: 3306,
-      username: 'root',
-      password: '0976',
-      database: 'discoEcommerce',
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true,
+    ConfigModule.forRoot({
+      isGlobal: true
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        type: 'mysql',
+        host: configService.get<string>('DB_HOST'),
+        port: parseInt(configService.getOrThrow<string>('DB_PORT'), 10),
+        username: configService.get<string>('DB_USERNAME'),
+        password: configService.get<string>('DB_PASSWORD'),
+        database: configService.get<string>('DB_DATABASE'),
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        synchronize: true,
+      }),
+      inject: [ConfigService]
     }),
     ProdutoModule,
     ClienteModule,
@@ -47,4 +55,4 @@ import { ItemPedidoService } from './item-pedido/item-pedido.service';
   controllers: [AppController, ProdutoController, CategoriaController, ClienteController, EnderecoController, PagamentoController, PedidoController, ItemPedidoController],
   providers: [AppService, ProdutoService, CategoriaService, ClienteService, EnderecoService, PagamentoService, PedidoService, ItemPedidoService],
 })
-export class AppModule {}
+export class AppModule { }
