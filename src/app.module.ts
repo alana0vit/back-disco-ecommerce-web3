@@ -28,21 +28,25 @@ import { ItemPedidoService } from './item-pedido/item-pedido.service';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true
+      isGlobal: true,
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: (configService: ConfigService) => ({
         type: 'mysql',
         host: configService.get<string>('DB_HOST'),
         port: parseInt(configService.getOrThrow<string>('DB_PORT'), 10),
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
+        extra: {
+          max: 10,
+          idleTimeoutMillis: 30000,
+        },
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: true,
       }),
-      inject: [ConfigService]
+      inject: [ConfigService],
     }),
     ProdutoModule,
     ClienteModule,
@@ -52,7 +56,25 @@ import { ItemPedidoService } from './item-pedido/item-pedido.service';
     PagamentoModule,
     ItemPedidoModule,
   ],
-  controllers: [AppController, ProdutoController, CategoriaController, ClienteController, EnderecoController, PagamentoController, PedidoController, ItemPedidoController],
-  providers: [AppService, ProdutoService, CategoriaService, ClienteService, EnderecoService, PagamentoService, PedidoService, ItemPedidoService],
+  controllers: [
+    AppController,
+    ProdutoController,
+    CategoriaController,
+    ClienteController,
+    EnderecoController,
+    PagamentoController,
+    PedidoController,
+    ItemPedidoController,
+  ],
+  providers: [
+    AppService,
+    ProdutoService,
+    CategoriaService,
+    ClienteService,
+    EnderecoService,
+    PagamentoService,
+    PedidoService,
+    ItemPedidoService,
+  ],
 })
-export class AppModule { }
+export class AppModule {}
