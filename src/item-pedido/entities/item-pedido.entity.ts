@@ -7,7 +7,6 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Double } from 'typeorm/browser';
 
 @Entity()
 export class ItemPedido {
@@ -17,11 +16,11 @@ export class ItemPedido {
   @Column({ nullable: false, type: 'int' })
   quantidade: number;
 
-  @Column({ nullable: false })
-  valorUnitario: Double;
+  @Column('decimal', { precision: 10, scale: 2, nullable: false })
+  valorUnitario: number;
 
-  @Column({ nullable: false })
-  valorTotal: Double;
+  @Column('decimal', { precision: 10, scale: 2, nullable: false })
+  valorTotal: number;
 
   @ManyToOne(() => Produto, (produto) => produto.itemPedidos, {
     nullable: false,

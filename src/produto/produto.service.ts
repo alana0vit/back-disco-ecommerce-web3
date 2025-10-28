@@ -18,7 +18,7 @@ export class ProdutoService {
   }
 
   async findAll(): Promise<Produto[]> {
-    return await this.produtoRepository.find();
+    return await this.produtoRepository.find({ where: { ativo: true } });
   }
 
   async findOne(id: number): Promise<Produto> {

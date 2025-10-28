@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsNotEmpty,
   Min,
+  IsDecimal,
 } from 'class-validator';
 
 export class CreateProdutoDto {
@@ -19,7 +20,7 @@ export class CreateProdutoDto {
 
   @Type(() => Number)
   @IsNotEmpty()
-  @IsNumber()
+  @IsDecimal()
   @Min(0)
   preco: number;
 
@@ -35,7 +36,7 @@ export class CreateProdutoDto {
 
   @IsBoolean()
   @IsNotEmpty()
-  statusProduto: boolean;
+  ativo: boolean;
 
   @IsOptional()
   @IsString()

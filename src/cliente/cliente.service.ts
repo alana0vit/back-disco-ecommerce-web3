@@ -1,26 +1,47 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateClienteDto } from './dto/create-cliente.dto';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
+import { Cliente } from './entities/cliente.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class ClienteService {
-  create(createClienteDto: CreateClienteDto) {
-    return 'This action adds a new cliente';
+  constructor(
+    @InjectRepository(Cliente)
+    private readonly clienteRepository: Repository<Cliente>,
+  ) {}
+
+  async create(createClienteDto: CreateClienteDto): Promise<Cliente> {
+    const cliente = this.clienteRepository.create(createClienteDto);
+    return await this.clienteRepository.save(cliente);
   }
 
-  findAll() {
-    return `This action returns all cliente`;
+  async findAll(): Promise<Cliente[]> {
+    return await this.clienteRepository.find({ where: { ativo: true } });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} cliente`;
+  async findOne(id: number): Promise<Cliente> {
+    const cliente = await this.clienteRepository.findOneBy({
+      idCliente: id,
+    });
+    if (!cliente) {
+      throw new NotFoundException(`Cliente não encontrado!`);
+    }
+    return cliente;
   }
 
-  update(id: number, updateClienteDto: UpdateClienteDto) {
-    return `This action updates a #${id} cliente`;
+  async update(
+    id: number,
+    updateclienteDto: UpdateClienteDto,
+  ): Promise<Cliente> {
+    const cliente = await this.findOne(id);
+    Object.assign(cliente, updateclienteDto);
+    return await this.clienteRepository.save(cliente);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} cliente`;
+  async remove(id: number): Promise<void> {
+    const cliente = await this.findOne(id);
+    await this.clienteRepository.remove(cliente);
   }
 }

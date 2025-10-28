@@ -31,7 +31,7 @@ export class Cliente {
   @Column({ default: true })
   ativo: boolean;
 
-  @Column({ nullable: false })
+  @Column({ nullable: false, type: 'date' })
   dataNasc: Date;
 
   @OneToMany(() => Endereco, (endereco) => endereco.cliente, {

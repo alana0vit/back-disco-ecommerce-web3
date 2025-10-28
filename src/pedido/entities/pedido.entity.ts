@@ -12,7 +12,6 @@ import {
   OneToMany,
   OneToOne,
 } from 'typeorm';
-import { Double } from 'typeorm/browser';
 
 enum Status {
   ABERTO = 'Aberto',
@@ -33,11 +32,11 @@ export class Pedido {
   })
   statusPedido: Status;
 
-  @Column({ nullable: false })
-  valorTotal: Double;
+  @Column('decimal', { precision: 10, scale: 2, nullable: false })
+  valorTotal: number;
 
   @Column({ type: 'int', nullable: false })
-  qtdotal: number;
+  qtdTotal: number;
 
   @Column({ type: 'text', nullable: true })
   descricao: string;

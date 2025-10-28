@@ -30,7 +30,7 @@ export class Produto {
   categoria: string;
 
   @Column({ type: 'boolean', default: true })
-  statusProduto: boolean;
+  ativo: boolean;
 
   @Column({ nullable: true })
   imagem: string;

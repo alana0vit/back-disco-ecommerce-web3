@@ -6,7 +6,6 @@ import {
   CreateDateColumn,
   OneToOne,
 } from 'typeorm';
-import { Double } from 'typeorm/browser';
 
 enum Status {
   PENDENTE = 'Pendente',
@@ -25,8 +24,8 @@ export class Pagamento {
   @PrimaryGeneratedColumn()
   idPag: number;
 
-  @Column({ nullable: false })
-  valor: Double;
+  @Column('decimal', { precision: 10, scale: 2, nullable: false })
+  valor: number;
 
   @Column({
     type: 'enum',
