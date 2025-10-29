@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
+import { Pedido } from './entities/pedido.entity';
 import { PedidoService } from './pedido.service';
 import { CreatePedidoDto } from './dto/create-pedido.dto';
 import { UpdatePedidoDto } from './dto/update-pedido.dto';
@@ -16,27 +17,30 @@ export class PedidoController {
   constructor(private readonly pedidoService: PedidoService) {}
 
   @Post()
-  create(@Body() createPedidoDto: CreatePedidoDto) {
-    return this.pedidoService.create(createPedidoDto);
+  async create(@Body() createPedidoDto: CreatePedidoDto): Promise<Pedido> {
+    return await this.pedidoService.create(createPedidoDto);
   }
 
-  @Get()
-  findAll() {
-    return this.pedidoService.findAll();
+  @Get('lista/:id')
+  async findAllByCliente(@Param('id') id: number): Promise<Pedido[]> {
+    return this.pedidoService.findAllByCliente(id);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.pedidoService.findOne(+id);
+  async findOne(@Param('id') id: string): Promise<Pedido> {
+    return await this.pedidoService.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePedidoDto: UpdatePedidoDto) {
-    return this.pedidoService.update(+id, updatePedidoDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updatePedidoDto: UpdatePedidoDto,
+  ): Promise<Pedido> {
+    return await this.pedidoService.update(+id, updatePedidoDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.pedidoService.remove(+id);
+  async remove(@Param('id') id: string): Promise<void> {
+    return await this.pedidoService.remove(+id);
   }
 }
