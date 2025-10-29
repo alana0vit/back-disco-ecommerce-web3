@@ -7,16 +7,18 @@ import {
   IsNotEmpty,
   Min,
   IsDecimal,
+  MaxLength,
 } from 'class-validator';
 
 export class CreateProdutoDto {
   @IsString()
   @IsNotEmpty()
+  @MaxLength(100)
   nome: string;
 
   @IsOptional()
   @IsString()
-  descricao: string;
+  descricao?: string;
 
   @Type(() => Number)
   @IsNotEmpty()
@@ -30,9 +32,10 @@ export class CreateProdutoDto {
   @Min(0)
   estoque: number;
 
-  @IsString()
+  @Type(() => Number)
+  @IsNumber()
   @IsNotEmpty()
-  categoria: string;
+  idCategoria: number;
 
   @IsBoolean()
   @IsNotEmpty()
@@ -40,5 +43,5 @@ export class CreateProdutoDto {
 
   @IsOptional()
   @IsString()
-  imagem: string;
+  imagem?: string;
 }

@@ -4,26 +4,47 @@ import { UpdateEnderecoDto } from './dto/update-endereco.dto';
 import { Endereco } from './entities/endereco.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Cliente } from 'src/cliente/entities/cliente.entity';
 
 @Injectable()
 export class EnderecoService {
   constructor(
     @InjectRepository(Endereco)
     private readonly enderecoRepository: Repository<Endereco>,
+
+    @InjectRepository(Cliente)
+    private readonly clienteRepository: Repository<Cliente>,
   ) {}
 
-  async create(createEnderecoDto: CreateEnderecoDto): Promise<Endereco> {
-    const endereco = this.enderecoRepository.create(createEnderecoDto);
-    return await this.enderecoRepository.save(endereco);
+  async create(
+    createEnderecoDto: CreateEnderecoDto,
+    idCliente: number,
+  ): Promise<Endereco> {
+    const cliente = await this.clienteRepository.findOne({
+      where: { idCliente },
+    });
+    if (!cliente) {
+      throw new NotFoundException('Cliente não encontrado');
+    }
+    const endereco = this.enderecoRepository.create({
+      ...createEnderecoDto,
+      cliente,
+    });
+    return this.enderecoRepository.save(endereco);
   }
 
   async findAll(): Promise<Endereco[]> {
-    return await this.enderecoRepository.find();
+    return await this.enderecoRepository.find({
+      relations: ['cliente', 'pedido'],
+    });
   }
 
   async findOne(id: number): Promise<Endereco> {
-    const endereco = await this.enderecoRepository.findOneBy({
-      idEndereco: id,
+    const endereco = await this.enderecoRepository.findOne({
+      where: {
+        idEndereco: id,
+      },
+      relations: ['cliente', 'pedido'],
     });
     if (!endereco) {
       throw new NotFoundException(`Endereço não encontrado!`);

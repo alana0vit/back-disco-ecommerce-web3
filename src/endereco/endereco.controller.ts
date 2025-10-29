@@ -6,21 +6,23 @@ import {
   Patch,
   Param,
   Delete,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { Endereco } from './entities/endereco.entity';
 import { EnderecoService } from './endereco.service';
 import { CreateEnderecoDto } from './dto/create-endereco.dto';
 import { UpdateEnderecoDto } from './dto/update-endereco.dto';
 
-@Controller('cliente/endereco')
+@Controller('endereco')
 export class EnderecoController {
   constructor(private readonly enderecoService: EnderecoService) {}
 
-  @Post()
+  @Post(':idCliente')
   async create(
+    @Param('idCliente', ParseIntPipe) idCliente: number,
     @Body() createEnderecoDto: CreateEnderecoDto,
   ): Promise<Endereco> {
-    return await this.enderecoService.create(createEnderecoDto);
+    return await this.enderecoService.create(createEnderecoDto, idCliente);
   }
 
   @Get()

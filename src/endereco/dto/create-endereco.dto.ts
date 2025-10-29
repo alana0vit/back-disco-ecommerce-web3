@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsBoolean,
   IsNotEmpty,
@@ -19,13 +20,14 @@ export class CreateEnderecoDto {
   @IsNotEmpty()
   cidade: string;
 
+  @Type(() => Number)
   @IsNumber()
   @IsNotEmpty()
   numCasa: number;
 
   @IsString()
   @IsOptional()
-  complemento: string;
+  complemento?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -38,4 +40,9 @@ export class CreateEnderecoDto {
   @IsBoolean()
   @IsNotEmpty()
   padrao: boolean;
+
+  @Type(() => Number)
+  @IsNumber()
+  @IsNotEmpty()
+  idCliente: number;
 }

@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsEmail,
+  IsBoolean,
 } from 'class-validator';
 
 export class CreateClienteDto {
@@ -22,9 +23,19 @@ export class CreateClienteDto {
 
   @IsOptional()
   @IsString()
-  telefone: string;
+  telefone?: string;
 
   @Type(() => Date)
   @IsDate()
+  @IsNotEmpty()
   dataCadastro: Date;
+
+  @Type(() => Date)
+  @IsDate()
+  @IsNotEmpty()
+  dataNasc: Date;
+
+  @IsBoolean()
+  @IsNotEmpty()
+  ativo: boolean;
 }

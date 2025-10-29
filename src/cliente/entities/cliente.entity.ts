@@ -23,7 +23,7 @@ export class Cliente {
   senha: string;
 
   @Column({ nullable: true })
-  telefone: string;
+  telefone?: string;
 
   @CreateDateColumn()
   dataCadastro: Date;

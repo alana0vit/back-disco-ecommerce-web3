@@ -4,25 +4,44 @@ import { Repository } from 'typeorm';
 import { Produto } from './entities/produto.entity';
 import { CreateProdutoDto } from './dto/create-produto.dto';
 import { UpdateProdutoDto } from './dto/update-produto.dto';
+import { Categoria } from 'src/categoria/entities/categoria.entity';
 
 @Injectable()
 export class ProdutoService {
   constructor(
     @InjectRepository(Produto)
     private readonly produtoRepository: Repository<Produto>,
+
+    @InjectRepository(Categoria)
+    private readonly categoriaRepository: Repository<Categoria>,
   ) {}
 
   async create(createProdutoDto: CreateProdutoDto): Promise<Produto> {
-    const produto = this.produtoRepository.create(createProdutoDto);
+    const categoria = await this.categoriaRepository.findOne({
+      where: { idCategoria: createProdutoDto.idCategoria },
+    });
+    if (!categoria) {
+      throw new NotFoundException('Categoria não encontrada');
+    }
+    const produto = this.produtoRepository.create({
+      ...createProdutoDto,
+      categoria,
+    });
     return await this.produtoRepository.save(produto);
   }
 
   async findAll(): Promise<Produto[]> {
-    return await this.produtoRepository.find({ where: { ativo: true } });
+    return await this.produtoRepository.find({
+      relations: ['categoria'],
+      where: { ativo: true },
+    });
   }
 
   async findOne(id: number): Promise<Produto> {
-    const produto = await this.produtoRepository.findOneBy({ idProduto: id });
+    const produto = await this.produtoRepository.findOne({
+      where: { idProduto: id },
+      relations: ['categoria'],
+    });
     if (!produto) {
       throw new NotFoundException(`Produto não encontrado!`);
     }
@@ -69,6 +88,15 @@ export class ProdutoService {
     updateProdutoDto: UpdateProdutoDto,
   ): Promise<Produto> {
     const produto = await this.findOne(id);
+    if (updateProdutoDto.idCategoria) {
+      const categoria = await this.categoriaRepository.findOne({
+        where: { idCategoria: updateProdutoDto.idCategoria },
+      });
+      if (!categoria) {
+        throw new NotFoundException('Categoria não encontrada');
+      }
+      produto.categoria = categoria;
+    }
     Object.assign(produto, updateProdutoDto);
     return await this.produtoRepository.save(produto);
   }

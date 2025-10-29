@@ -17,8 +17,8 @@ export class Produto {
   @Column({ nullable: false })
   nome: string;
 
-  @Column({ type: 'text' })
-  descricao: string;
+  @Column({ type: 'text', nullable: true })
+  descricao?: string;
 
   @Column('decimal', { precision: 10, scale: 2, nullable: false })
   preco: number;
@@ -26,14 +26,11 @@ export class Produto {
   @Column({ type: 'int', nullable: false })
   estoque: number;
 
-  @Column({ nullable: false })
-  categoria: string;
-
   @Column({ type: 'boolean', default: true })
   ativo: boolean;
 
   @Column({ nullable: true })
-  imagem: string;
+  imagem?: string;
 
   @ManyToOne(() => Categoria, (categoria) => categoria.produtos, {
     nullable: false,
@@ -41,7 +38,7 @@ export class Produto {
     onUpdate: 'CASCADE',
   })
   @JoinColumn({ name: 'id_categoria_prod' })
-  author: Categoria;
+  categoria: Categoria;
 
   @OneToMany(() => ItemPedido, (itemPedido) => itemPedido.produto, {
     cascade: true,
