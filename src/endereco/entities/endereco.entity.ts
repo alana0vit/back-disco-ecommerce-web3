@@ -43,7 +43,7 @@ export class Endereco {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })
-  @JoinColumn({ name: 'id_cliente_edrc' })
+  @JoinColumn({ name: 'idCliente' })
   cliente: Cliente;
 
   @OneToMany(() => Pedido, (pedido) => pedido.endereco, {

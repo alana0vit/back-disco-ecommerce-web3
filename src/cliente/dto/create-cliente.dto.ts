@@ -28,14 +28,9 @@ export class CreateClienteDto {
   @Type(() => Date)
   @IsDate()
   @IsNotEmpty()
-  dataCadastro: Date;
-
-  @Type(() => Date)
-  @IsDate()
-  @IsNotEmpty()
   dataNasc: Date;
 
   @IsBoolean()
-  @IsNotEmpty()
-  ativo: boolean;
+  @IsOptional()
+  ativo?: boolean;
 }

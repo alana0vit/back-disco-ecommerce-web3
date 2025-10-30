@@ -8,10 +8,9 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Min,
   ValidateNested,
 } from 'class-validator';
-import { CreateClienteDto } from 'src/cliente/dto/create-cliente.dto';
-import { CreateEnderecoDto } from 'src/endereco/dto/create-endereco.dto';
 import { CreateItemPedidoDto } from 'src/item-pedido/dto/create-item-pedido.dto';
 import { CreatePagamentoDto } from 'src/pagamento/dto/create-pagamento.dto';
 
@@ -23,43 +22,42 @@ enum Status {
 }
 export class CreatePedidoDto {
   @IsEnum(Status)
-  @IsNotEmpty()
-  statusPedido: Status = Status.ABERTO;
+  @IsOptional()
+  statusPedido?: Status = Status.ABERTO;
 
-  @IsNotEmpty()
   @IsDecimal()
-  valorTotal: number;
+  @IsOptional()
+  valorTotal?: number;
 
   @IsNumber()
-  @IsNotEmpty()
-  qtdTotal: number;
+  @Min(0)
+  @IsOptional()
+  qtdTotal?: number;
 
   @IsString()
   @IsOptional()
   descricao?: string;
 
   @IsDate()
-  @IsNotEmpty()
+  @IsOptional()
   @Type(() => Date)
-  dataPedido: Date;
+  dataPedido?: Date;
 
+  @IsNumber()
   @IsNotEmpty()
-  @ValidateNested()
-  @Type(() => CreateClienteDto)
-  cliente: CreateClienteDto;
+  id_cliente: number;
 
+  @IsNumber()
   @IsNotEmpty()
-  @ValidateNested()
-  @Type(() => CreateEnderecoDto)
-  endereco: CreateEnderecoDto;
+  id_endereco: number;
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateItemPedidoDto)
-  itemPedido: CreateItemPedidoDto;
+  item_pedidos: CreateItemPedidoDto[];
 
   @IsOptional()
   @ValidateNested()
   @Type(() => CreatePagamentoDto)
-  pagamento: CreatePagamentoDto;
+  id_pagamento?: CreatePagamentoDto;
 }

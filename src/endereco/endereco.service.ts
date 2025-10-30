@@ -67,15 +67,17 @@ export class EnderecoService {
   ): Promise<Endereco> {
     const endereco = await this.enderecoRepository.findOne({
       where: { idEndereco: id },
+      relations: ['cliente'],
     });
-    if (!endereco) {
-      throw new Error('Endereço não encontrado');
-    }
+    if (!endereco) throw new NotFoundException('Endereço não encontrado');
     if (endereco.padrao) {
       throw new Error('O endereço já é padrão!');
     }
     const antigo = await this.enderecoRepository.findOne({
-      where: { padrao: true },
+      where: {
+        padrao: true,
+        cliente: { idCliente: endereco.cliente.idCliente },
+      },
     });
     if (antigo) {
       antigo.padrao = false;

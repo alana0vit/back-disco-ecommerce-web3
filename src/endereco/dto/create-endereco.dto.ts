@@ -40,9 +40,4 @@ export class CreateEnderecoDto {
   @IsBoolean()
   @IsNotEmpty()
   padrao: boolean;
-
-  @Type(() => Number)
-  @IsNumber()
-  @IsNotEmpty()
-  idCliente: number;
 }
