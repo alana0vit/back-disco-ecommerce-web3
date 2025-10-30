@@ -10,36 +10,39 @@ import {
 import { ItemPedidoService } from './item-pedido.service';
 import { CreateItemPedidoDto } from './dto/create-item-pedido.dto';
 import { UpdateItemPedidoDto } from './dto/update-item-pedido.dto';
+import { ItemPedido } from './entities/item-pedido.entity';
 
 @Controller('item-pedido')
 export class ItemPedidoController {
   constructor(private readonly itemPedidoService: ItemPedidoService) {}
 
   @Post()
-  create(@Body() createItemPedidoDto: CreateItemPedidoDto) {
-    return this.itemPedidoService.create(createItemPedidoDto);
+  async create(
+    @Body() createItemPedidoDto: CreateItemPedidoDto,
+  ): Promise<ItemPedido> {
+    return await this.itemPedidoService.create(createItemPedidoDto);
   }
 
   @Get()
-  findAll() {
-    return this.itemPedidoService.findAll();
+  async findAll(): Promise<ItemPedido[]> {
+    return await this.itemPedidoService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.itemPedidoService.findOne(+id);
+  async findOne(@Param('id') id: string): Promise<ItemPedido> {
+    return await this.itemPedidoService.findOne(+id);
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateItemPedidoDto: UpdateItemPedidoDto,
-  ) {
-    return this.itemPedidoService.update(+id, updateItemPedidoDto);
+  ): Promise<ItemPedido> {
+    return await this.itemPedidoService.update(+id, updateItemPedidoDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.itemPedidoService.remove(+id);
+  async remove(@Param('id') id: string): Promise<void> {
+    return await this.itemPedidoService.remove(+id);
   }
 }
