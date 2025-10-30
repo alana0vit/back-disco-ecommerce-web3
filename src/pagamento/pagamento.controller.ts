@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
+import { Pagamento } from './entities/pagamento.entity';
 import { PagamentoService } from './pagamento.service';
 import { CreatePagamentoDto } from './dto/create-pagamento.dto';
 import { UpdatePagamentoDto } from './dto/update-pagamento.dto';
@@ -16,30 +17,32 @@ export class PagamentoController {
   constructor(private readonly pagamentoService: PagamentoService) {}
 
   @Post()
-  create(@Body() createPagamentoDto: CreatePagamentoDto) {
-    return this.pagamentoService.create(createPagamentoDto);
+  async create(
+    @Body() createPagamentoDto: CreatePagamentoDto,
+  ): Promise<Pagamento> {
+    return await this.pagamentoService.create(createPagamentoDto);
   }
 
   @Get()
-  findAll() {
-    return this.pagamentoService.findAll();
+  async findAll(): Promise<Pagamento[]> {
+    return await this.pagamentoService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.pagamentoService.findOne(+id);
+  async findOne(@Param('id') id: string): Promise<Pagamento> {
+    return await this.pagamentoService.findOne(+id);
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updatePagamentoDto: UpdatePagamentoDto,
-  ) {
-    return this.pagamentoService.update(+id, updatePagamentoDto);
+  ): Promise<Pagamento> {
+    return await this.pagamentoService.update(+id, updatePagamentoDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.pagamentoService.remove(+id);
+  async remove(@Param('id') id: string): Promise<void> {
+    return await this.pagamentoService.remove(+id);
   }
 }

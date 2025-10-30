@@ -13,7 +13,7 @@ import {
   OneToOne,
 } from 'typeorm';
 
-enum Status {
+export enum Status {
   ABERTO = 'Aberto',
   AGUARDANDO = 'Aguardando pagamento',
   PAGO = 'Pago',

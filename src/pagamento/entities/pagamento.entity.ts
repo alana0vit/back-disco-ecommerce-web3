@@ -7,7 +7,7 @@ import {
   OneToOne,
 } from 'typeorm';
 
-enum Status {
+export enum StatusPag {
   PENDENTE = 'Pendente',
   PAGO = 'Pago',
   CANCELADO = 'Cancelado',
@@ -29,10 +29,10 @@ export class Pagamento {
 
   @Column({
     type: 'enum',
-    enum: Status,
-    default: Status.PENDENTE,
+    enum: StatusPag,
+    default: StatusPag.PENDENTE,
   })
-  statusPag: Status;
+  statusPag: StatusPag;
 
   @Column({
     type: 'enum',
