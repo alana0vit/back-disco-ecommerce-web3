@@ -123,6 +123,8 @@ npm run start:prod
 | `PATCH` | `/item-pedido/:id` | Atualiza dados de um item |
 | `DELETE` | `/item-pedido/:id` | Remove um item |
 
+> O projeto roda na URL: http://localhost:3000
+
 ---
 
 ## 🧱 Banco de Dados
