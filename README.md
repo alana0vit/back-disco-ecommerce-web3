@@ -16,47 +16,8 @@ API REST desenvolvida com **NestJS**, **TypeORM** e **MySQL**, para gerenciar to
 
 ## 🧱 Estrutura do Projeto
 
-backend-disco-ecommerce/
-│
-├── dist/                     # Código compilado (build)
-├── node_modules/             # Dependências
-├── src/
-│   ├── categoria/
-│   │   ├── dto/
-│   │   ├── entities/
-│   │   ├── categoria.controller.ts
-│   │   ├── categoria.module.ts
-│   │   └── categoria.service.ts
-│   │
-│   ├── cliente/
-│   ├── endereco/
-│   ├── item-pedido/
-│   ├── pagamento/
-│   ├── pedido/
-│   ├── produto/
-│   │   ├── dto/
-│   │   ├── entities/
-│   │   ├── produto.controller.ts
-│   │   ├── produto.module.ts
-│   │   └── produto.service.ts
-│   │
-│   ├── app.controller.ts
-│   ├── app.module.ts
-│   ├── app.service.ts
-│   └── main.ts
-│
-├── test/                     # Testes automatizados
-│
-├── .env                      # Variáveis de ambiente
-├── .env.template             # Exemplo de configuração
-├── .gitignore
-├── .prettierrc
-├── eslint.config.mjs
-├── nest-cli.json
-├── package.json
-├── tsconfig.json
-├── tsconfig.build.json
-└── README.md
+<img width="580" height="815" alt="image" src="https://github.com/user-attachments/assets/a8c5c77b-73bb-440b-bb02-082db941cd0f" />
+
 
 > Cada módulo foi gerado via `nest g resource nome`, contendo suas pastas `dto/` e `entities/` para manter o padrão de camadas limpo e escalável.
 
