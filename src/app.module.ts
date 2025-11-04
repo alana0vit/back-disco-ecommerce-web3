@@ -30,7 +30,7 @@ import { ItemPedidoModule } from './item-pedido/item-pedido.module';
           idleTimeoutMillis: 30000,
         },
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true,
+        synchronize: false,
       }),
       inject: [ConfigService],
     }),
