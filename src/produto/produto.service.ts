@@ -5,6 +5,7 @@ import { Produto } from './entities/produto.entity';
 import { CreateProdutoDto } from './dto/create-produto.dto';
 import { UpdateProdutoDto } from './dto/update-produto.dto';
 import { Categoria } from 'src/categoria/entities/categoria.entity';
+import { Pagamento, StatusPag } from 'src/pagamento/entities/pagamento.entity';
 
 @Injectable()
 export class ProdutoService {
@@ -14,6 +15,9 @@ export class ProdutoService {
 
     @InjectRepository(Categoria)
     private readonly categoriaRepository: Repository<Categoria>,
+
+    @InjectRepository(Pagamento)
+    private readonly pagamentoRepository: Repository<Pagamento>,
   ) {}
 
   async create(createProdutoDto: CreateProdutoDto): Promise<Produto> {
@@ -37,6 +41,48 @@ export class ProdutoService {
     });
   }
 
+  async findAllWithDisponivel(): Promise<any[]> {
+    const produtos = await this.produtoRepository.find({
+      relations: ['categoria'],
+      where: { ativo: true },
+    });
+    const result: (Produto & { estoqueDisponivel: number })[] = [];
+    for (const produto of produtos) {
+      const reservado = await this.getQuantidadeReservada(produto.idProduto);
+      result.push({
+        ...produto,
+        estoqueDisponivel: produto.estoque - reservado,
+      });
+    }
+    return result;
+  }
+
+  async findOneWithDisponivel(id: number): Promise<any> {
+    const produto = await this.produtoRepository.findOne({
+      where: { idProduto: id },
+      relations: ['categoria'],
+    });
+    if (!produto) throw new NotFoundException('Produto não encontrado');
+    const reservado = await this.getQuantidadeReservada(produto.idProduto);
+    return {
+      ...produto,
+      estoqueDisponivel: produto.estoque - reservado,
+    };
+  }
+
+  private async getQuantidadeReservada(idProduto: number): Promise<number> {
+    const pendentes = await this.pagamentoRepository
+      .createQueryBuilder('pagamento')
+      .leftJoin('pagamento.pedido', 'pedido')
+      .leftJoin('pedido.itemPedidos', 'itemPedidos')
+      .where('pagamento.statusPag = :status', { status: StatusPag.PENDENTE })
+      .andWhere('itemPedidos.produtoIdProduto = :idProduto', { idProduto })
+      .select('SUM(itemPedidos.quantidade)', 'reservado')
+      .getRawOne();
+
+    return Number(pendentes?.reservado ?? 0);
+  }
+
   async findOne(id: number): Promise<Produto> {
     const produto = await this.produtoRepository.findOne({
       where: { idProduto: id },
@@ -55,31 +101,24 @@ export class ProdutoService {
     precoMax?: number,
   ): Promise<Produto[]> {
     const query = this.produtoRepository.createQueryBuilder('produto');
-
     if (nome) {
       query.andWhere('produto.nome ILIKE :nome', { nome: `%${nome}%` });
     }
-
     if (categoria) {
       query.andWhere('produto.categoria = :categoria', { categoria });
     }
-
     if (precoMin !== undefined) {
       query.andWhere('produto.preco >= :precoMin', { precoMin });
     }
-
     if (precoMax !== undefined) {
       query.andWhere('produto.preco <= :precoMax', { precoMax });
     }
-
     const produtos = await query.getMany();
-
     if (produtos.length === 0) {
       throw new NotFoundException(
         'Nenhum produto encontrado com os filtros informados!',
       );
     }
-
     return produtos;
   }
 

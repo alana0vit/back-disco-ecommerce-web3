@@ -27,6 +27,16 @@ export class ProdutoController {
     return await this.produtoService.findAll();
   }
 
+  @Get('disponiveis')
+  async findAllWithDisponivel() {
+    return await this.produtoService.findAllWithDisponivel();
+  }
+
+  @Get(':id/disponivel')
+  async findOneWithDisponivel(@Param('id') id: string) {
+    return await this.produtoService.findOneWithDisponivel(+id);
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Produto> {
     return await this.produtoService.findOne(+id);

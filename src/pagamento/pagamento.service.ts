@@ -46,6 +46,19 @@ export class PagamentoService {
     ) {
       throw new ConflictException('Este pedido já possui um pagamento ativo.');
     }
+    for (const item of pedido.itemPedidos) {
+      const produto = item.produto;
+      if (!produto)
+        throw new NotFoundException(`Produto ${item.idItem} não encontrado.`);
+      const estoqueReal = produto.estoque;
+      const pendentes = await this.getQuantidadeReservada(produto.idProduto);
+      const estoqueDisponivel = estoqueReal - pendentes;
+      if (estoqueDisponivel < item.quantidade) {
+        throw new BadRequestException(
+          `Estoque insuficiente para o produto "${produto.nome}". Disponível: ${estoqueDisponivel}`,
+        );
+      }
+    }
     const pagamento = this.pagamentoRepository.create({
       valor,
       metodoPag,
@@ -53,6 +66,26 @@ export class PagamentoService {
       pedido,
     });
     return await this.pagamentoRepository.save(pagamento);
+  }
+
+  private async getQuantidadeReservada(idProduto: number): Promise<number> {
+    const pendentes = await this.pagamentoRepository
+      .createQueryBuilder('pagamento')
+      .leftJoinAndSelect('pagamento.pedido', 'pedido')
+      .leftJoinAndSelect('pedido.itemPedidos', 'itemPedidos')
+      .leftJoinAndSelect('itemPedidos.produto', 'produto')
+      .where('pagamento.statusPag = :status', { status: StatusPag.PENDENTE })
+      .andWhere('produto.idProduto = :idProduto', { idProduto })
+      .getMany();
+    let total = 0;
+    for (const pagamento of pendentes) {
+      for (const item of pagamento.pedido.itemPedidos) {
+        if (item.produto.idProduto === idProduto) {
+          total += item.quantidade;
+        }
+      }
+    }
+    return total;
   }
 
   async findAll(): Promise<Pagamento[]> {
@@ -96,36 +129,23 @@ export class PagamentoService {
         Object.assign(pagamento, updatePagamentoDto);
         return await this.pagamentoRepository.save(pagamento);
       }
-      const pedido = await this.pedidoRepository.findOne({
-        where: { idPedido: pagamento.pedido.idPedido },
-        relations: ['itemPedidos', 'itemPedidos.produto'],
-      });
-      if (!pedido)
-        throw new NotFoundException('Pedido vinculado não encontrado.');
+      const pedido = pagamento.pedido;
       for (const item of pedido.itemPedidos) {
         const produto = item.produto;
-        if (!produto) {
-          throw new NotFoundException(
-            `Produto do item ${item.idItem ?? '(sem id)'} não encontrado.`,
-          );
-        }
+        if (!produto) throw new NotFoundException(`Produto não encontrado.`);
         if (produto.estoque < item.quantidade) {
           throw new BadRequestException(
             `Estoque insuficiente para o produto "${produto.nome}" (id: ${produto.idProduto}).`,
           );
         }
-      }
-      for (const item of pedido.itemPedidos) {
-        const produto = item.produto;
-        produto.estoque = produto.estoque - item.quantidade;
+        produto.estoque = Math.max(0, produto.estoque - item.quantidade);
         await this.produtoRepository.save(produto);
       }
       pedido.statusPedido = Status.PAGO;
       await this.pedidoRepository.save(pedido);
-      Object.assign(pagamento, updatePagamentoDto);
       pagamento.statusPag = StatusPag.PAGO;
-      await this.pagamentoRepository.save(pagamento);
-      return pagamento;
+      Object.assign(pagamento, updatePagamentoDto);
+      return await this.pagamentoRepository.save(pagamento);
     }
     if (updatePagamentoDto.statusPag === 'Cancelado') {
       if (pagamento.statusPag === StatusPag.PAGO) {
@@ -133,17 +153,12 @@ export class PagamentoService {
           'Pagamento já confirmado (PAGO) não pode ser cancelado via este endpoint.',
         );
       }
-      const pedido = await this.pedidoRepository.findOne({
-        where: { idPedido: pagamento.pedido.idPedido },
-      });
-      if (!pedido)
-        throw new NotFoundException('Pedido vinculado não encontrado.');
+      const pedido = pagamento.pedido;
       pedido.statusPedido = Status.ABERTO;
       await this.pedidoRepository.save(pedido);
-      Object.assign(pagamento, updatePagamentoDto);
       pagamento.statusPag = StatusPag.CANCELADO;
-      await this.pagamentoRepository.save(pagamento);
-      return pagamento;
+      Object.assign(pagamento, updatePagamentoDto);
+      return await this.pagamentoRepository.save(pagamento);
     }
     Object.assign(pagamento, updatePagamentoDto);
     return await this.pagamentoRepository.save(pagamento);

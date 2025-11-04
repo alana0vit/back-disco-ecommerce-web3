@@ -34,18 +34,11 @@ backend-disco-ecommerce/
 │   ├── pagamento/
 │   ├── pedido/
 │   ├── produto/
-│   │   ├── dto/
-│   │   ├── entities/
-│   │   ├── produto.controller.ts
-│   │   ├── produto.module.ts
-│   │   └── produto.service.ts
 │   │
 │   ├── app.controller.ts
 │   ├── app.module.ts
 │   ├── app.service.ts
 │   └── main.ts
-│
-├── test/                     # Testes automatizados
 │
 ├── .env                      # Variáveis de ambiente
 ├── .env.template             # Exemplo de configuração
