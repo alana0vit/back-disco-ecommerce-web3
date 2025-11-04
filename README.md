@@ -25,23 +25,23 @@ API REST desenvolvida com **NestJS**, **TypeORM** e **MySQL**, para gerenciar to
 ## 🚀 Instalação e Execução
 
 ### 🔧 1. Clonar o repositório
-git clone https://github.com/alana0vit/backend-disco-ecommerce.git
-cd backend-disco-ecommerce
+| git clone https://github.com/alana0vit/backend-disco-ecommerce.git |
+| cd backend-disco-ecommerce |
 
 ### 📦 2. Instalar dependências
-npm install
+| npm install |
 
 ### ⚙️ 3. Configurar o arquivo `.env`
 Crie o arquivo `.env` na raiz do projeto com base no `.env.template`:
 
-DB_HOST=localhost
-DB_PORT=3306
-DB_USERNAME=root
-DB_PASSWORD=senha
-DB_DATABASE=discoEcommerce
-PORT=3000
-JWT_SECRET=seu_secret
-JWT_EXPIRES_IN=3600s
+| DB_HOST=localhost |
+| DB_PORT=3306 |
+| DB_USERNAME=root |
+| DB_PASSWORD=senha |
+| DB_DATABASE=discoEcommerce |
+| PORT=3000 |
+| JWT_SECRET=seu_secret |
+| JWT_EXPIRES_IN=3600s |
 
 ### ▶️ 4. Executar o projeto
 

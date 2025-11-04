@@ -18,7 +18,7 @@ export class ProdutoService {
 
     @InjectRepository(Pagamento)
     private readonly pagamentoRepository: Repository<Pagamento>,
-  ) { }
+  ) {}
 
   async create(createProdutoDto: CreateProdutoDto): Promise<Produto> {
     const categoria = await this.categoriaRepository.findOne({
@@ -107,7 +107,9 @@ export class ProdutoService {
     if (categoria) {
       query
         .leftJoinAndSelect('produto.categoria', 'categoria')
-        .andWhere('LOWER(categoria.nome) LIKE LOWER(:categoria)', { categoria: `%${categoria}%` });
+        .andWhere('LOWER(categoria.nome) LIKE LOWER(:categoria)', {
+          categoria: `%${categoria}%`,
+        });
     }
     if (precoMin !== undefined) {
       query.andWhere('produto.preco >= :precoMin', { precoMin });
