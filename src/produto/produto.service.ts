@@ -42,13 +42,15 @@ export class ProdutoService {
   }
 
   async findAllWithDisponivel(): Promise<any[]> {
-    const produtos = await this.produtoRepository.find({
+    const produtos: Produto[] = await this.produtoRepository.find({
       relations: ['categoria'],
       where: { ativo: true },
     });
     const result: (Produto & { estoqueDisponivel: number })[] = [];
     for (const produto of produtos) {
-      const reservado = await this.getQuantidadeReservada(produto.idProduto);
+      const reservado: number = await this.getQuantidadeReservada(
+        produto.idProduto,
+      );
       result.push({
         ...produto,
         estoqueDisponivel: produto.estoque - reservado,

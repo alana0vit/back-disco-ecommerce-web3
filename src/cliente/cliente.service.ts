@@ -14,7 +14,7 @@ export class ClienteService {
   ) {}
 
   async create(createClienteDto: CreateClienteDto): Promise<Cliente> {
-    const hash = await bcrypt.hash(createClienteDto.senha, 10);
+    const hash: string = await bcrypt.hash(createClienteDto.senha, 10);
     const cliente = this.clienteRepository.create({
       ...createClienteDto,
       senha: hash,
