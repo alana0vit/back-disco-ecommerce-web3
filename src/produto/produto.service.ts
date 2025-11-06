@@ -18,7 +18,7 @@ export class ProdutoService {
 
     @InjectRepository(Pagamento)
     private readonly pagamentoRepository: Repository<Pagamento>,
-  ) {}
+  ) { }
 
   async create(createProdutoDto: CreateProdutoDto): Promise<Produto> {
     const categoria = await this.categoriaRepository.findOne({
@@ -34,14 +34,7 @@ export class ProdutoService {
     return await this.produtoRepository.save(produto);
   }
 
-  async findAll(): Promise<Produto[]> {
-    return await this.produtoRepository.find({
-      relations: ['categoria'],
-      where: { ativo: true },
-    });
-  }
-
-  async findAllWithDisponivel(): Promise<any[]> {
+  async findAll(): Promise<any[]> {
     const produtos: Produto[] = await this.produtoRepository.find({
       relations: ['categoria'],
       where: { ativo: true },
@@ -78,22 +71,10 @@ export class ProdutoService {
       .leftJoin('pagamento.pedido', 'pedido')
       .leftJoin('pedido.itemPedidos', 'itemPedidos')
       .where('pagamento.statusPag = :status', { status: StatusPag.PENDENTE })
-      .andWhere('itemPedidos.produtoIdProduto = :idProduto', { idProduto })
+      .andWhere('itemPedidos.id_produto_itpdd = :idProduto', { idProduto })
       .select('SUM(itemPedidos.quantidade)', 'reservado')
       .getRawOne();
-
     return Number(pendentes?.reservado ?? 0);
-  }
-
-  async findOne(id: number): Promise<Produto> {
-    const produto = await this.produtoRepository.findOne({
-      where: { idProduto: id },
-      relations: ['categoria'],
-    });
-    if (!produto) {
-      throw new NotFoundException(`Produto não encontrado!`);
-    }
-    return produto;
   }
 
   async findWithFilters(
@@ -102,28 +83,31 @@ export class ProdutoService {
     precoMin?: number,
     precoMax?: number,
   ): Promise<Produto[]> {
-    const query = this.produtoRepository.createQueryBuilder('produto');
+    const query = this.produtoRepository
+      .createQueryBuilder('produto')
+      .leftJoinAndSelect('produto.categoria', 'categoria')
+      .where('produto.ativo = :ativo', { ativo: true });
     if (nome) {
-      query.andWhere('produto.nome ILIKE :nome', { nome: `%${nome}%` });
+      query.andWhere('LOWER(produto.nome) LIKE LOWER(:nome)', { nome: `%${nome}%` });
     }
     if (categoria) {
-      query
-        .leftJoinAndSelect('produto.categoria', 'categoria')
-        .andWhere('LOWER(categoria.nome) LIKE LOWER(:categoria)', {
-          categoria: `%${categoria}%`,
+      if (!isNaN(Number(categoria))) {
+        query.andWhere('categoria.idCategoria = :idCategoria', { idCategoria: Number(categoria) });
+      } else {
+        query.andWhere('LOWER(categoria.nome) LIKE LOWER(:categoriaNome)', {
+          categoriaNome: `%${categoria}%`,
         });
+      }
     }
-    if (precoMin !== undefined) {
+    if (precoMin !== undefined && !isNaN(precoMin)) {
       query.andWhere('produto.preco >= :precoMin', { precoMin });
     }
-    if (precoMax !== undefined) {
+    if (precoMax !== undefined && !isNaN(precoMax)) {
       query.andWhere('produto.preco <= :precoMax', { precoMax });
     }
     const produtos = await query.getMany();
     if (produtos.length === 0) {
-      throw new NotFoundException(
-        'Nenhum produto encontrado com os filtros informados!',
-      );
+      throw new NotFoundException('Nenhum produto encontrado com os filtros informados!');
     }
     return produtos;
   }
@@ -132,7 +116,7 @@ export class ProdutoService {
     id: number,
     updateProdutoDto: UpdateProdutoDto,
   ): Promise<Produto> {
-    const produto = await this.findOne(id);
+    const produto = await this.findOneWithDisponivel(id);
     if (updateProdutoDto.idCategoria) {
       const categoria = await this.categoriaRepository.findOne({
         where: { idCategoria: updateProdutoDto.idCategoria },
@@ -147,7 +131,7 @@ export class ProdutoService {
   }
 
   async remove(id: number): Promise<void> {
-    const produto = await this.findOne(id);
+    const produto = await this.findOneWithDisponivel(id);
     await this.produtoRepository.remove(produto);
   }
 }

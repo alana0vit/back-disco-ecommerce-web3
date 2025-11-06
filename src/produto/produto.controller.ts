@@ -15,7 +15,7 @@ import { UpdateProdutoDto } from './dto/update-produto.dto';
 
 @Controller('produto')
 export class ProdutoController {
-  constructor(private readonly produtoService: ProdutoService) {}
+  constructor(private readonly produtoService: ProdutoService) { }
 
   @Post()
   async create(@Body() createProdutoDto: CreateProdutoDto): Promise<Produto> {
@@ -27,21 +27,6 @@ export class ProdutoController {
     return await this.produtoService.findAll();
   }
 
-  @Get('disponiveis')
-  async findAllWithDisponivel() {
-    return await this.produtoService.findAllWithDisponivel();
-  }
-
-  @Get(':id/disponivel')
-  async findOneWithDisponivel(@Param('id') id: string) {
-    return await this.produtoService.findOneWithDisponivel(+id);
-  }
-
-  @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Produto> {
-    return await this.produtoService.findOne(+id);
-  }
-
   @Get('filtro')
   async findWithFilters(
     @Query('nome') nome?: string,
@@ -49,15 +34,21 @@ export class ProdutoController {
     @Query('precoMin') precoMin?: string,
     @Query('precoMax') precoMax?: string,
   ): Promise<Produto[]> {
-    const precoMinNum = precoMin ? Number(precoMin) : undefined;
-    const precoMaxNum = precoMax ? Number(precoMax) : undefined;
-
+    const precoMinNum =
+      precoMin && !isNaN(Number(precoMin)) ? Number(precoMin) : undefined;
+    const precoMaxNum =
+      precoMax && !isNaN(Number(precoMax)) ? Number(precoMax) : undefined;
     return await this.produtoService.findWithFilters(
       nome,
       categoria,
       precoMinNum,
       precoMaxNum,
     );
+  }
+  
+  @Get(':id')
+  async findOneWithDisponivel(@Param('id') id: string) {
+    return await this.produtoService.findOneWithDisponivel(+id);
   }
 
   @Patch(':id')
