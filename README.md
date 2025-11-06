@@ -86,8 +86,6 @@ npm run start:prod
 |--------|------|------------|
 | `GET` | `/produto` | Lista todos os produtos ativos |
 | `POST` | `/produto` | Cria um novo produto |
-| `GET` | `/produto/disponiveis` | Lista produtos com estoque disponível |
-| `GET` | `/produto/:id/disponivel` | Traz a quantidade reservada de um produto |
 | `GET` | `/produto/:id` | Busca produto por ID |
 | `GET` | `/produto/filtro` | Filtra produtos por nome, categoria e min/max de preço |
 | `PATCH` | `/produto/:id` | Atualiza dados de um produto |
