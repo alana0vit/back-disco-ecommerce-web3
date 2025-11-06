@@ -35,7 +35,7 @@ export class CreateProdutoDto {
   @Type(() => Number)
   @IsNumber()
   @IsNotEmpty()
-  idCategoria: number;
+  id_categoria_prod: number;
 
   @IsBoolean()
   @IsNotEmpty()

@@ -30,7 +30,7 @@ export class PedidoService {
 
     @InjectRepository(ItemPedido)
     private readonly itemPedidoRepository: Repository<ItemPedido>,
-  ) {}
+  ) { }
 
   async create(createPedidoDto: CreatePedidoDto): Promise<Pedido> {
     const cliente = await this.clienteRepository.findOne({
@@ -126,6 +126,12 @@ export class PedidoService {
 
   async remove(id: number): Promise<void> {
     const pedido = await this.findOne(id);
+    if (!pedido) {
+      throw new NotFoundException(`Pedido com ID ${id} não encontrado.`);
+    }
+    if (pedido.pagamento && pedido.pagamento.statusPag === 'Pago') {
+      throw new BadRequestException('Pedido pago não pode ser alterado ou removido.');
+    }
     await this.pedidoRepository.remove(pedido);
   }
 }

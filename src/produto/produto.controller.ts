@@ -7,19 +7,37 @@ import {
   Param,
   Delete,
   Query,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { ProdutoService } from './produto.service';
 import { Produto } from './entities/produto.entity';
 import { CreateProdutoDto } from './dto/create-produto.dto';
 import { UpdateProdutoDto } from './dto/update-produto.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 
 @Controller('produto')
 export class ProdutoController {
   constructor(private readonly produtoService: ProdutoService) { }
 
   @Post()
-  async create(@Body() createProdutoDto: CreateProdutoDto): Promise<Produto> {
-    return await this.produtoService.create(createProdutoDto);
+  @UseInterceptors(
+    FileInterceptor('imagem', {
+      storage: diskStorage({
+        destination: './upload',
+        filename: (req, file, callback) => {
+          const fileName = Date.now() + '-' + file.originalname;
+          callback(null, fileName);
+        },
+      }),
+    }),
+  )
+  async create(
+    @Body() createProdutoDto: CreateProdutoDto,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    return this.produtoService.create(createProdutoDto, file);
   }
 
   @Get()
@@ -45,7 +63,7 @@ export class ProdutoController {
       precoMaxNum,
     );
   }
-  
+
   @Get(':id')
   async findOneWithDisponivel(@Param('id') id: string) {
     return await this.produtoService.findOneWithDisponivel(+id);

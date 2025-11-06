@@ -20,9 +20,10 @@ export class ProdutoService {
     private readonly pagamentoRepository: Repository<Pagamento>,
   ) { }
 
-  async create(createProdutoDto: CreateProdutoDto): Promise<Produto> {
+  async create(createProdutoDto: CreateProdutoDto,
+  file?: Express.Multer.File,): Promise<Produto> {
     const categoria = await this.categoriaRepository.findOne({
-      where: { idCategoria: createProdutoDto.idCategoria },
+      where: { idCategoria: createProdutoDto.id_categoria_prod },
     });
     if (!categoria) {
       throw new NotFoundException('Categoria não encontrada');
@@ -30,6 +31,7 @@ export class ProdutoService {
     const produto = this.produtoRepository.create({
       ...createProdutoDto,
       categoria,
+      imagem: file ? file.filename : undefined,
     });
     return await this.produtoRepository.save(produto);
   }
@@ -117,9 +119,9 @@ export class ProdutoService {
     updateProdutoDto: UpdateProdutoDto,
   ): Promise<Produto> {
     const produto = await this.findOneWithDisponivel(id);
-    if (updateProdutoDto.idCategoria) {
+    if (updateProdutoDto.id_categoria_prod) {
       const categoria = await this.categoriaRepository.findOne({
-        where: { idCategoria: updateProdutoDto.idCategoria },
+        where: { idCategoria: updateProdutoDto.id_categoria_prod },
       });
       if (!categoria) {
         throw new NotFoundException('Categoria não encontrada');
