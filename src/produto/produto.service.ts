@@ -20,8 +20,14 @@ export class ProdutoService {
     private readonly pagamentoRepository: Repository<Pagamento>,
   ) { }
 
+  private getImageUrl(filename?: string): string | undefined {
+    if (!filename) return undefined;
+    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    return `${baseUrl}/uploads/${filename}`;
+  }
+
   async create(createProdutoDto: CreateProdutoDto,
-  file?: Express.Multer.File,): Promise<Produto> {
+    file?: Express.Multer.File,): Promise<Produto> {
     const categoria = await this.categoriaRepository.findOne({
       where: { idCategoria: createProdutoDto.id_categoria_prod },
     });
@@ -30,6 +36,7 @@ export class ProdutoService {
     }
     const produto = this.produtoRepository.create({
       ...createProdutoDto,
+      ativo: createProdutoDto.ativo ? true : false,
       categoria,
       imagem: file ? file.filename : undefined,
     });
@@ -48,6 +55,7 @@ export class ProdutoService {
       );
       result.push({
         ...produto,
+        imagem: this.getImageUrl(produto.imagem),
         estoqueDisponivel: produto.estoque - reservado,
       });
     }
@@ -63,6 +71,7 @@ export class ProdutoService {
     const reservado = await this.getQuantidadeReservada(produto.idProduto);
     return {
       ...produto,
+      imagem: this.getImageUrl(produto.imagem),
       estoqueDisponivel: produto.estoque - reservado,
     };
   }

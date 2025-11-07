@@ -38,9 +38,10 @@ export class CreateProdutoDto {
   id_categoria_prod: number;
 
   @IsBoolean()
-  @IsNotEmpty()
+  @IsOptional()
   ativo: boolean;
 
+  @Type(() => Boolean)
   @IsOptional()
   @IsString()
   imagem?: string;

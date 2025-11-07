@@ -10,9 +10,15 @@ import { CategoriaModule } from './categoria/categoria.module';
 import { PedidoModule } from './pedido/pedido.module';
 import { PagamentoModule } from './pagamento/pagamento.module';
 import { ItemPedidoModule } from './item-pedido/item-pedido.module';
+import { join } from 'path';
+import { ServeStaticModule } from '@nestjs/serve-static';
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'),
+      serveRoot: '/uploads',
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
     }),
@@ -45,4 +51,4 @@ import { ItemPedidoModule } from './item-pedido/item-pedido.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
