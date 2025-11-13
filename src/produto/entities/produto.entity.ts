@@ -7,7 +7,9 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
+  OneToOne,
 } from 'typeorm';
+import { Imagem } from 'src/imagemProduto/entities/imagem.entity';
 
 @Entity()
 export class Produto {
@@ -29,8 +31,9 @@ export class Produto {
   @Column({ type: 'boolean', default: true })
   ativo: boolean;
 
-  @Column({ nullable: true })
-  imagem?: string;
+  @OneToOne(() => Imagem, { nullable: true, eager: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'id_imagem' })
+  imagem?: Imagem | null;
 
   @ManyToOne(() => Categoria, (categoria) => categoria.produtos, {
     nullable: false,

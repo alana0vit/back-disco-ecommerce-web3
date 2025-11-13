@@ -40,9 +40,4 @@ export class CreateProdutoDto {
   @IsBoolean()
   @IsOptional()
   ativo: boolean;
-
-  @Type(() => Boolean)
-  @IsOptional()
-  @IsString()
-  imagem?: string;
 }

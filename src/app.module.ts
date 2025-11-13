@@ -12,6 +12,7 @@ import { PagamentoModule } from './pagamento/pagamento.module';
 import { ItemPedidoModule } from './item-pedido/item-pedido.module';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { ImagemModule } from './imagemProduto/imagem.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
       }),
       inject: [ConfigService],
     }),
+    ImagemModule,
     ProdutoModule,
     ClienteModule,
     EnderecoModule,

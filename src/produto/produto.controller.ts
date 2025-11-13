@@ -25,9 +25,9 @@ export class ProdutoController {
   @UseInterceptors(
     FileInterceptor('imagem', {
       storage: diskStorage({
-        destination: './upload',
+        destination: './uploads',
         filename: (req, file, callback) => {
-          const fileName = Date.now() + '-' + file.originalname;
+          const fileName = `${Date.now()}-${file.originalname}`;
           callback(null, fileName);
         },
       }),
@@ -70,11 +70,23 @@ export class ProdutoController {
   }
 
   @Patch(':id')
+  @UseInterceptors(
+    FileInterceptor('imagem', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, callback) => {
+          const fileName = `${Date.now()}-${file.originalname}`;
+          callback(null, fileName);
+        },
+      }),
+    }),
+  )
   async update(
     @Param('id') id: string,
     @Body() updateProdutoDto: UpdateProdutoDto,
+    @UploadedFile() file?: Express.Multer.File,
   ): Promise<Produto> {
-    return await this.produtoService.update(+id, updateProdutoDto);
+    return await this.produtoService.update(+id, updateProdutoDto, file);
   }
 
   @Delete(':id')

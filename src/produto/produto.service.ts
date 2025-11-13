@@ -6,6 +6,7 @@ import { CreateProdutoDto } from './dto/create-produto.dto';
 import { UpdateProdutoDto } from './dto/update-produto.dto';
 import { Categoria } from 'src/categoria/entities/categoria.entity';
 import { Pagamento, StatusPag } from 'src/pagamento/entities/pagamento.entity';
+import { Imagem } from 'src/imagemProduto/entities/imagem.entity';
 
 @Injectable()
 export class ProdutoService {
@@ -18,12 +19,15 @@ export class ProdutoService {
 
     @InjectRepository(Pagamento)
     private readonly pagamentoRepository: Repository<Pagamento>,
+
+    @InjectRepository(Imagem)
+    private readonly imagemRepository: Repository<Imagem>,
   ) { }
 
   private getImageUrl(filename?: string): string | undefined {
     if (!filename) return undefined;
     const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-    return `${baseUrl}/uploads/${filename}`;
+    return `${baseUrl}${filename}`;
   }
 
   async create(createProdutoDto: CreateProdutoDto,
@@ -34,44 +38,53 @@ export class ProdutoService {
     if (!categoria) {
       throw new NotFoundException('Categoria não encontrada');
     }
+    let imagem: Imagem | undefined;
+    if (file) {
+      const caminho = `/uploads/${file.filename}`;
+      imagem = this.imagemRepository.create({
+        nomeArquivo: file.filename,
+        caminho,
+      });
+      await this.imagemRepository.save(imagem);
+    }
     const produto = this.produtoRepository.create({
       ...createProdutoDto,
-      ativo: createProdutoDto.ativo ? true : false,
+      ativo: createProdutoDto.ativo ?? true,
       categoria,
-      imagem: file ? file.filename : undefined,
+      imagem,
     });
     return await this.produtoRepository.save(produto);
   }
 
   async findAll(): Promise<any[]> {
-    const produtos: Produto[] = await this.produtoRepository.find({
-      relations: ['categoria'],
+    const produtos = await this.produtoRepository.find({
+      relations: ['categoria', 'imagem'],
       where: { ativo: true },
     });
-    const result: (Produto & { estoqueDisponivel: number })[] = [];
-    for (const produto of produtos) {
-      const reservado: number = await this.getQuantidadeReservada(
-        produto.idProduto,
-      );
-      result.push({
-        ...produto,
-        imagem: this.getImageUrl(produto.imagem),
-        estoqueDisponivel: produto.estoque - reservado,
-      });
-    }
-    return result;
+    return Promise.all(
+      produtos.map(async (produto) => {
+        const reservado = await this.getQuantidadeReservada(produto.idProduto);
+        return {
+          ...produto,
+          imagemUrl: produto.imagem
+            ? this.getImageUrl(produto.imagem.caminho)
+            : null,
+          estoqueDisponivel: produto.estoque - reservado,
+        };
+      }),
+    );
   }
 
   async findOneWithDisponivel(id: number): Promise<any> {
     const produto = await this.produtoRepository.findOne({
       where: { idProduto: id },
-      relations: ['categoria'],
+      relations: ['categoria', 'imagem'],
     });
     if (!produto) throw new NotFoundException('Produto não encontrado');
     const reservado = await this.getQuantidadeReservada(produto.idProduto);
     return {
       ...produto,
-      imagem: this.getImageUrl(produto.imagem),
+      imagemUrl: produto.imagem ? this.getImageUrl(produto.imagem.caminho) : null,
       estoqueDisponivel: produto.estoque - reservado,
     };
   }
@@ -123,11 +136,12 @@ export class ProdutoService {
     return produtos;
   }
 
-  async update(
-    id: number,
-    updateProdutoDto: UpdateProdutoDto,
-  ): Promise<Produto> {
-    const produto = await this.findOneWithDisponivel(id);
+  async update(id: number, updateProdutoDto: UpdateProdutoDto, file?: Express.Multer.File,): Promise<Produto> {
+    const produto = await this.produtoRepository.findOne({
+      where: { idProduto: id },
+      relations: ['categoria', 'imagem'],
+    });
+    if (!produto) throw new NotFoundException('Produto não encontrado');
     if (updateProdutoDto.id_categoria_prod) {
       const categoria = await this.categoriaRepository.findOne({
         where: { idCategoria: updateProdutoDto.id_categoria_prod },
@@ -136,6 +150,29 @@ export class ProdutoService {
         throw new NotFoundException('Categoria não encontrada');
       }
       produto.categoria = categoria;
+    }
+    if (file) {
+      const caminho = `/uploads/${file.filename}`;
+      if (produto.imagem) {
+        produto.imagem.nomeArquivo = file.filename;
+        produto.imagem.caminho = caminho;
+        await this.imagemRepository.save(produto.imagem);
+      } else {
+        const novaImagem = this.imagemRepository.create({
+          nomeArquivo: file.filename,
+          caminho,
+        });
+        await this.imagemRepository.save(novaImagem);
+        produto.imagem = novaImagem;
+      }
+    } else if (
+      Object.prototype.hasOwnProperty.call(updateProdutoDto, 'imagem') &&
+      updateProdutoDto.imagem === null
+    ) {
+      if (produto.imagem) {
+        await this.imagemRepository.remove(produto.imagem);
+        produto.imagem = null;
+      }
     }
     Object.assign(produto, updateProdutoDto);
     return await this.produtoRepository.save(produto);
