@@ -9,15 +9,16 @@ async function bootstrap() {
   app.enableCors({
     origin: 'http://localhost:8000',
     methods: 'GET, HEAD, PUT, PATCH, POST, DELETE, OPTIONS',
-    // credentials: true, // cookies/sessões
   });
 
   const config = new DocumentBuilder()
     .setTitle('APIs do Discool')
-    .setDescription('documentação de todas as apis do Discool disponiveis')
+    .setDescription('Documentação de uma API para um sistema de e-commerce de Discos')
     .setVersion('1.0')
-    .addTag('disc')
+    .addBearerAuth()
+    .addTag('Discool')
     .build();
+
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
 

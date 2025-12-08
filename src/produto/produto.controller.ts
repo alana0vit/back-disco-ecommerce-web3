@@ -11,6 +11,16 @@ import {
   UploadedFile,
   UseGuards,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ProdutoService } from './produto.service';
 import { Produto } from './entities/produto.entity';
 import { CreateProdutoDto } from './dto/create-produto.dto';
@@ -21,13 +31,23 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 
+@ApiTags('Produtos')
+@ApiBearerAuth()
 @Controller('produto')
 export class ProdutoController {
-  constructor(private readonly produtoService: ProdutoService) { }
+  constructor(private readonly produtoService: ProdutoService) {}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @Post()
+  @ApiOperation({ summary: 'Cadastrar um novo produto (com imagem)' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Dados do produto + imagem',
+    type: CreateProdutoDto,
+  })
+  @ApiResponse({ status: 201, description: 'Produto criado com sucesso' })
+  @ApiResponse({ status: 403, description: 'Acesso negado (apenas ADMIN)' })
   @UseInterceptors(
     FileInterceptor('imagem', {
       storage: diskStorage({
@@ -49,6 +69,12 @@ export class ProdutoController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE')
   @Get()
+  @ApiOperation({ summary: 'Listar todos os produtos' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de produtos retornada com sucesso',
+    type: [Produto],
+  })
   async findAll(): Promise<Produto[]> {
     return await this.produtoService.findAll();
   }
@@ -56,6 +82,34 @@ export class ProdutoController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE')
   @Get('filtro')
+  @ApiOperation({ summary: 'Filtrar produtos por nome, categoria e preço' })
+  @ApiQuery({
+    name: 'nome',
+    required: false,
+    description: 'Filtrar pelo nome do produto',
+  })
+  @ApiQuery({
+    name: 'categoria',
+    required: false,
+    description: 'Filtrar pela categoria do produto',
+  })
+  @ApiQuery({
+    name: 'precoMin',
+    required: false,
+    description: 'Preço mínimo',
+    example: 10,
+  })
+  @ApiQuery({
+    name: 'precoMax',
+    required: false,
+    description: 'Preço máximo',
+    example: 100,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista filtrada de produtos retornada com sucesso',
+    type: [Produto],
+  })
   async findWithFilters(
     @Query('nome') nome?: string,
     @Query('categoria') categoria?: string,
@@ -66,6 +120,7 @@ export class ProdutoController {
       precoMin && !isNaN(Number(precoMin)) ? Number(precoMin) : undefined;
     const precoMaxNum =
       precoMax && !isNaN(Number(precoMax)) ? Number(precoMax) : undefined;
+
     return await this.produtoService.findWithFilters(
       nome,
       categoria,
@@ -77,6 +132,13 @@ export class ProdutoController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE')
   @Get(':id')
+  @ApiOperation({ summary: 'Buscar produto pelo ID (com disponibilidade)' })
+  @ApiParam({ name: 'id', description: 'ID do produto' })
+  @ApiResponse({
+    status: 200,
+    description: 'Produto retornado com sucesso',
+  })
+  @ApiResponse({ status: 404, description: 'Produto não encontrado' })
   async findOneWithDisponivel(@Param('id') id: string) {
     return await this.produtoService.findOneWithDisponivel(+id);
   }
@@ -84,6 +146,15 @@ export class ProdutoController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @Patch(':id')
+  @ApiOperation({ summary: 'Atualizar produto pelo ID (com ou sem imagem)' })
+  @ApiConsumes('multipart/form-data')
+  @ApiParam({ name: 'id', description: 'ID do produto' })
+  @ApiBody({
+    description: 'Dados atualizados do produto',
+    type: UpdateProdutoDto,
+  })
+  @ApiResponse({ status: 200, description: 'Produto atualizado com sucesso' })
+  @ApiResponse({ status: 404, description: 'Produto não encontrado' })
   @UseInterceptors(
     FileInterceptor('imagem', {
       storage: diskStorage({
@@ -106,6 +177,10 @@ export class ProdutoController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @Delete(':id')
+  @ApiOperation({ summary: 'Deletar um produto pelo ID' })
+  @ApiParam({ name: 'id', description: 'ID do produto' })
+  @ApiResponse({ status: 200, description: 'Produto removido com sucesso' })
+  @ApiResponse({ status: 404, description: 'Produto não encontrado' })
   async remove(@Param('id') id: string): Promise<void> {
     return await this.produtoService.remove(+id);
   }

@@ -13,6 +13,8 @@ import {
   OneToOne,
 } from 'typeorm';
 
+import { ApiProperty } from '@nestjs/swagger';
+
 export enum Status {
   ABERTO = 'Aberto',
   AGUARDANDO = 'Aguardando pagamento',
@@ -22,9 +24,18 @@ export enum Status {
 
 @Entity()
 export class Pedido {
+  @ApiProperty({
+    example: 1,
+    description: 'ID do pedido',
+  })
   @PrimaryGeneratedColumn()
   idPedido: number;
 
+  @ApiProperty({
+    enum: Status,
+    example: Status.ABERTO,
+    description: 'Status atual do pedido',
+  })
   @Column({
     type: 'enum',
     enum: Status,
@@ -32,18 +43,39 @@ export class Pedido {
   })
   statusPedido: Status;
 
+  @ApiProperty({
+    example: 350.5,
+    description: 'Valor total do pedido',
+  })
   @Column('decimal', { precision: 10, scale: 2, nullable: false })
   valorTotal: number;
 
+  @ApiProperty({
+    example: 3,
+    description: 'Quantidade total de itens no pedido',
+  })
   @Column({ type: 'int', nullable: false })
   qtdTotal: number;
 
+  @ApiProperty({
+    example: 'Pedido realizado via aplicativo',
+    required: false,
+    description: 'Descrição adicional do pedido',
+  })
   @Column({ type: 'text', nullable: true })
   descricao: string;
 
+  @ApiProperty({
+    example: '2025-05-01T14:30:00.000Z',
+    description: 'Data em que o pedido foi criado',
+  })
   @CreateDateColumn()
   dataPedido: Date;
 
+  @ApiProperty({
+    type: () => Cliente,
+    description: 'Cliente responsável pelo pedido',
+  })
   @ManyToOne(() => Cliente, (cliente) => cliente.pedidos, {
     nullable: false,
     onDelete: 'CASCADE',
@@ -52,12 +84,21 @@ export class Pedido {
   @JoinColumn({ name: 'id_cliente_pdd' })
   cliente: Cliente;
 
+  @ApiProperty({
+    type: () => [ItemPedido],
+    description: 'Lista de itens vinculados ao pedido',
+  })
   @OneToMany(() => ItemPedido, (itemPedido) => itemPedido.pedido, {
     cascade: true,
     eager: false,
   })
   itemPedidos: ItemPedido[];
 
+  @ApiProperty({
+    type: () => Pagamento,
+    required: false,
+    description: 'Pagamento vinculado ao pedido',
+  })
   @OneToOne(() => Pagamento, (pagamento) => pagamento.pedido, {
     cascade: true,
     eager: false,
@@ -66,6 +107,10 @@ export class Pedido {
   @JoinColumn()
   pagamento: Pagamento;
 
+  @ApiProperty({
+    type: () => Endereco,
+    description: 'Endereço de entrega do pedido',
+  })
   @ManyToOne(() => Endereco, (endereco) => endereco.pedido, {
     nullable: false,
     onDelete: 'CASCADE',

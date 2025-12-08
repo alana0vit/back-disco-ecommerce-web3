@@ -15,7 +15,16 @@ import { UpdatePedidoDto } from './dto/update-pedido.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
+import { 
+  ApiBearerAuth,
+  ApiOperation, 
+  ApiParam, 
+  ApiResponse, 
+  ApiTags 
+} from '@nestjs/swagger';
 
+@ApiTags('Pedidos')
+@ApiBearerAuth()
 @Controller('pedido')
 export class PedidoController {
   constructor(private readonly pedidoService: PedidoService) {}
@@ -23,6 +32,8 @@ export class PedidoController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE')
   @Post()
+  @ApiOperation({ summary: 'Cria um novo pedido' })
+  @ApiResponse({ status: 201, description: 'Pedido criado com sucesso.' })
   async create(@Body() createPedidoDto: CreatePedidoDto): Promise<Pedido> {
     return await this.pedidoService.create(createPedidoDto);
   }
@@ -30,6 +41,9 @@ export class PedidoController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE')
   @Get('lista/:id')
+  @ApiOperation({ summary: 'Lista todos os pedidos de um cliente específico' })
+  @ApiParam({ name: 'id', description: 'ID do cliente' })
+  @ApiResponse({ status: 200, description: 'Pedidos do cliente retornados com sucesso.' })
   async findAllByCliente(@Param('id') id: number): Promise<Pedido[]> {
     return this.pedidoService.findAllByCliente(id);
   }
@@ -37,6 +51,10 @@ export class PedidoController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE')
   @Get(':id')
+  @ApiOperation({ summary: 'Busca um pedido pelo ID' })
+  @ApiParam({ name: 'id', description: 'ID do pedido' })
+  @ApiResponse({ status: 200, description: 'Pedido encontrado com sucesso.' })
+  @ApiResponse({ status: 404, description: 'Pedido não encontrado.' })
   async findOne(@Param('id') id: string): Promise<Pedido> {
     return await this.pedidoService.findOne(+id);
   }
@@ -44,6 +62,9 @@ export class PedidoController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE')
   @Patch(':id')
+  @ApiOperation({ summary: 'Atualiza um pedido pelo ID' })
+  @ApiParam({ name: 'id', description: 'ID do pedido' })
+  @ApiResponse({ status: 200, description: 'Pedido atualizado com sucesso.' })
   async update(
     @Param('id') id: string,
     @Body() updatePedidoDto: UpdatePedidoDto,
@@ -54,6 +75,9 @@ export class PedidoController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE')
   @Delete(':id')
+  @ApiOperation({ summary: 'Remove um pedido pelo ID' })
+  @ApiParam({ name: 'id', description: 'ID do pedido' })
+  @ApiResponse({ status: 200, description: 'Pedido removido com sucesso.' })
   async remove(@Param('id') id: string): Promise<void> {
     return await this.pedidoService.remove(+id);
   }

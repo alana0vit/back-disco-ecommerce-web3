@@ -13,14 +13,29 @@ import { UpdateClienteDto } from './dto/update-cliente.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiBody,
+} from '@nestjs/swagger';
 
+@ApiTags('Clientes')
+@ApiBearerAuth()
 @Controller('cliente')
 export class ClienteController {
-  constructor(private readonly clienteService: ClienteService) { }
+  constructor(private readonly clienteService: ClienteService) {}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE')
   @Get()
+  @ApiOperation({ summary: 'Lista todos os clientes' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de clientes retornada com sucesso.',
+    type: [Cliente],
+  })
   async findAll(): Promise<Cliente[]> {
     return await this.clienteService.findAll();
   }
@@ -28,6 +43,16 @@ export class ClienteController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE')
   @Get(':id')
+  @ApiOperation({ summary: 'Busca um cliente pelo ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Cliente encontrado com sucesso.',
+    type: Cliente,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Cliente não encontrado.',
+  })
   async findOne(@Param('id') id: string): Promise<Cliente> {
     return await this.clienteService.findOne(+id);
   }
@@ -35,6 +60,17 @@ export class ClienteController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE')
   @Patch(':id')
+  @ApiOperation({ summary: 'Atualiza os dados de um cliente' })
+  @ApiBody({ type: UpdateClienteDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Cliente atualizado com sucesso.',
+    type: Cliente,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Cliente não encontrado.',
+  })
   async update(
     @Param('id') id: string,
     @Body() updateClienteDto: UpdateClienteDto,
@@ -45,6 +81,15 @@ export class ClienteController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE')
   @Delete(':id')
+  @ApiOperation({ summary: 'Remove um cliente pelo ID' })
+  @ApiResponse({
+    status: 204,
+    description: 'Cliente removido com sucesso.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Cliente não encontrado.',
+  })
   async remove(@Param('id') id: string): Promise<void> {
     return await this.clienteService.remove(+id);
   }

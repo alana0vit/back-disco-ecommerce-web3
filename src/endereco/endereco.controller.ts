@@ -16,14 +16,26 @@ import { UpdateEnderecoDto } from './dto/update-endereco.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('Endereço')
+@ApiBearerAuth()
 @Controller('endereco')
 export class EnderecoController {
-  constructor(private readonly enderecoService: EnderecoService) { }
+  constructor(private readonly enderecoService: EnderecoService) {}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE')
   @Post(':idCliente')
+  @ApiOperation({ summary: 'Cria um endereço para um cliente' })
+  @ApiParam({ name: 'idCliente', type: Number, description: 'ID do cliente' })
+  @ApiResponse({ status: 201, description: 'Endereço criado com sucesso' })
   async create(
     @Param('idCliente', ParseIntPipe) idCliente: number,
     @Body() createEnderecoDto: CreateEnderecoDto,
@@ -34,6 +46,8 @@ export class EnderecoController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE')
   @Get()
+  @ApiOperation({ summary: 'Lista todos os endereços' })
+  @ApiResponse({ status: 200, description: 'Lista retornada com sucesso' })
   async findAll(): Promise<Endereco[]> {
     return await this.enderecoService.findAll();
   }
@@ -41,6 +55,10 @@ export class EnderecoController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE')
   @Get(':id')
+  @ApiOperation({ summary: 'Busca um endereço pelo ID' })
+  @ApiParam({ name: 'id', type: Number, description: 'ID do endereço' })
+  @ApiResponse({ status: 200, description: 'Endereço encontrado' })
+  @ApiResponse({ status: 404, description: 'Endereço não encontrado' })
   async findOne(@Param('id') id: string): Promise<Endereco> {
     return await this.enderecoService.findOne(+id);
   }
@@ -48,6 +66,9 @@ export class EnderecoController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE')
   @Patch(':id')
+  @ApiOperation({ summary: 'Atualiza um endereço pelo ID' })
+  @ApiParam({ name: 'id', type: Number, description: 'ID do endereço' })
+  @ApiResponse({ status: 200, description: 'Endereço atualizado com sucesso' })
   async update(
     @Param('id') id: string,
     @Body() updateEnderecoDto: UpdateEnderecoDto,
@@ -58,6 +79,9 @@ export class EnderecoController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE')
   @Patch('padrao/:id')
+  @ApiOperation({ summary: 'Define um endereço como padrão' })
+  @ApiParam({ name: 'id', type: Number, description: 'ID do endereço' })
+  @ApiResponse({ status: 200, description: 'Endereço padrão atualizado' })
   async defaultUpdate(
     @Param('id') id: string,
     @Body() updateEnderecoDto: UpdateEnderecoDto,
@@ -68,6 +92,9 @@ export class EnderecoController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE')
   @Delete(':id')
+  @ApiOperation({ summary: 'Remove um endereço pelo ID' })
+  @ApiParam({ name: 'id', type: Number, description: 'ID do endereço' })
+  @ApiResponse({ status: 200, description: 'Endereço removido com sucesso' })
   async remove(@Param('id') id: string): Promise<void> {
     return await this.enderecoService.remove(+id);
   }

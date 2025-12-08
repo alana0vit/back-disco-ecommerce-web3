@@ -7,21 +7,39 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity()
 export class ItemPedido {
+  @ApiProperty({ example: 1, description: 'ID do item do pedido' })
   @PrimaryGeneratedColumn()
   idItem: number;
 
+  @ApiProperty({
+    example: 2,
+    description: 'Quantidade do produto neste item do pedido',
+  })
   @Column({ nullable: false, type: 'int' })
   quantidade: number;
 
+  @ApiProperty({
+    example: 49.90,
+    description: 'Valor unitário do produto no momento da compra',
+  })
   @Column('decimal', { precision: 10, scale: 2, nullable: false })
   valorUnitario: number;
 
+  @ApiProperty({
+    example: 99.80,
+    description: 'Valor total (quantidade x valor unitário)',
+  })
   @Column('decimal', { precision: 10, scale: 2, nullable: false })
   valorTotal: number;
 
+  @ApiProperty({
+    type: () => Produto,
+    description: 'Produto associado a este item do pedido',
+  })
   @ManyToOne(() => Produto, (produto) => produto.itemPedidos, {
     nullable: false,
     onDelete: 'CASCADE',
@@ -30,6 +48,10 @@ export class ItemPedido {
   @JoinColumn({ name: 'id_produto_itpdd' })
   produto: Produto;
 
+  @ApiProperty({
+    type: () => Pedido,
+    description: 'Pedido ao qual este item pertence',
+  })
   @ManyToOne(() => Pedido, (pedido) => pedido.itemPedidos, {
     nullable: false,
     onDelete: 'CASCADE',
