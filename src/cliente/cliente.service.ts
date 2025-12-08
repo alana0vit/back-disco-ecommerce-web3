@@ -1,5 +1,4 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateClienteDto } from './dto/create-cliente.dto';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
 import { Cliente } from './entities/cliente.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,19 +12,10 @@ export class ClienteService {
     private readonly clienteRepository: Repository<Cliente>,
   ) {}
 
-  async create(createClienteDto: CreateClienteDto): Promise<Cliente> {
-    const hash: string = await bcrypt.hash(createClienteDto.senha, 10);
-    const cliente = this.clienteRepository.create({
-      ...createClienteDto,
-      senha: hash,
-    });
-    return await this.clienteRepository.save(cliente);
-  }
-
   async findAll(): Promise<Cliente[]> {
     return await this.clienteRepository.find({
       where: { ativo: true },
-      //relations: ['enderecos', 'pedidos'],
+      relations: ['enderecos', 'pedidos'],
     });
   }
 

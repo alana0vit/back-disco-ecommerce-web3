@@ -8,6 +8,10 @@ import {
   OneToMany,
 } from 'typeorm';
 
+export enum Role {
+  Cliente = 'CLIENTE',
+  Admin = 'ADMIN',
+}
 @Entity()
 export class Cliente {
   @PrimaryGeneratedColumn()
@@ -30,6 +34,9 @@ export class Cliente {
 
   @Column({ default: true })
   ativo: boolean;
+
+  @Column({ type: 'enum', enum: Role, default: Role.Cliente })
+  role: Role;
 
   @Column({ nullable: false, type: 'date' })
   dataNasc: Date;
