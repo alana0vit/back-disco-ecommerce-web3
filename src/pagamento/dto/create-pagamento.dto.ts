@@ -8,50 +8,28 @@ import {
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-export enum Metodo {
-  CARTAO = 'Cartão',
-  BOLETO = 'Boleto',
-  PIX = 'Pix',
-}
-
-export enum Status {
-  PENDENTE = 'Pendente',
-  PAGO = 'Pago',
-  CANCELADO = 'Cancelado',
-}
+import { Metodo, StatusPag } from '../entities/pagamento.entity';
 
 export class CreatePagamentoDto {
-  @ApiProperty({
-    description: 'Valor total do pagamento',
-    example: 120.50,
-  })
+  @ApiProperty({ example: 120.5 })
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
   valor: number;
 
-  @ApiProperty({
-    description: 'Método de pagamento utilizado',
-    enum: Metodo,
-    example: Metodo.PIX,
-  })
+  @ApiProperty({ enum: Metodo, example: Metodo.PIX })
   @IsEnum(Metodo)
-  @IsNotEmpty()
   metodoPag: Metodo;
 
   @ApiPropertyOptional({
-    description: 'Status do pagamento',
-    enum: Status,
-    example: Status.PENDENTE,
+    enum: StatusPag,
+    example: StatusPag.PENDENTE,
   })
-  @IsEnum(Status)
+  @IsEnum(StatusPag)
   @IsOptional()
-  statusPag?: Status;
+  statusPag?: StatusPag;
 
-  @ApiProperty({
-    description: 'ID do pedido associado ao pagamento',
-    example: 7,
-  })
+  @ApiProperty({ example: 7 })
   @Type(() => Number)
   @IsNumber()
   @IsNotEmpty()
