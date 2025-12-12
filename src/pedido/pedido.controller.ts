@@ -6,7 +6,8 @@ import {
   Patch,
   Param,
   Delete,
-  UseGuards
+  UseGuards,
+  ParseIntPipe
 } from '@nestjs/common';
 import { Pedido } from './entities/pedido.entity';
 import { PedidoService } from './pedido.service';
@@ -15,27 +16,30 @@ import { UpdatePedidoDto } from './dto/update-pedido.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
-import { 
+import {
   ApiBearerAuth,
-  ApiOperation, 
-  ApiParam, 
-  ApiResponse, 
-  ApiTags 
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags
 } from '@nestjs/swagger';
 
 @ApiTags('Pedidos')
 @ApiBearerAuth()
 @Controller('pedido')
 export class PedidoController {
-  constructor(private readonly pedidoService: PedidoService) {}
+  constructor(private readonly pedidoService: PedidoService) { }
 
+  @Post('/:idCarrinho')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE')
-  @Post()
   @ApiOperation({ summary: 'Cria um novo pedido' })
   @ApiResponse({ status: 201, description: 'Pedido criado com sucesso.' })
-  async create(@Body() createPedidoDto: CreatePedidoDto): Promise<Pedido> {
-    return await this.pedidoService.create(createPedidoDto);
+  async create(
+    @Body() createPedidoDto: CreatePedidoDto,
+    @Param('idCarrinho', ParseIntPipe) idCarrinho: number
+  ) {
+    return this.pedidoService.create(createPedidoDto, idCarrinho);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

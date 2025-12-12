@@ -7,13 +7,15 @@ import {
   ManyToOne,
   JoinColumn,
   Column,
+  OneToMany,
 } from 'typeorm';
+import { ItemPedido } from 'src/item-pedido/entities/item-pedido.entity';
 
 @Entity()
 export class CarrinhoItem {
   @ApiProperty()
   @PrimaryGeneratedColumn()
-  idItem: number;
+  idCarrinhoItem: number;
 
   @ApiProperty()
   @Column({ type: 'int', nullable: false })
@@ -37,4 +39,12 @@ export class CarrinhoItem {
   })
   @JoinColumn({ name: 'id_carrinho' })
   carrinho: Carrinho;
+
+  @ApiProperty({
+    type: () => [ItemPedido],
+    description: 'Items do pedido',
+  })
+  @OneToMany(() => ItemPedido, (ip) => ip.carrinhoItem)
+  itemPedidos: ItemPedido[];
+
 }

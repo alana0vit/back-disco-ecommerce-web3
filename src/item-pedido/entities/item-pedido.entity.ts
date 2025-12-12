@@ -8,6 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
+import { CarrinhoItem } from 'src/carrinho-item/entities/carrinho-item.entity';
 
 @Entity()
 export class ItemPedido {
@@ -59,4 +60,12 @@ export class ItemPedido {
   })
   @JoinColumn({ name: 'id_pedido_itpdd' })
   pedido: Pedido;
+
+  @ApiProperty({
+    type: () => CarrinhoItem,
+    description: 'Itens do pedido',
+  })
+  @ManyToOne(() => CarrinhoItem, (ci) => ci.itemPedidos, { eager: false })
+  carrinhoItem: CarrinhoItem;
+
 }

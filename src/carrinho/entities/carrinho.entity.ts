@@ -9,6 +9,7 @@ import {
   OneToMany,
   Column,
 } from 'typeorm';
+import { Pedido } from 'src/pedido/entities/pedido.entity';
 
 @Entity()
 export class Carrinho {
@@ -31,4 +32,9 @@ export class Carrinho {
     eager: true,
   })
   itens: CarrinhoItem[];
+
+  @ApiProperty({ type: () => Pedido })
+  @OneToOne(() => Pedido, (pedido) => pedido.carrinho)
+  pedido: Pedido;
+
 }
