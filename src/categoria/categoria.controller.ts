@@ -25,14 +25,29 @@ import {
 } from '@nestjs/swagger';
 
 @ApiTags('Categorias')
-@ApiBearerAuth()
 @Controller('categoria')
 export class CategoriaController {
   constructor(private readonly categoriaService: CategoriaService) {}
 
+  // ========== ROTA PÚBLICA (SEM AUTENTICAÇÃO) ==========
+
+  @Get('public')
+  @ApiOperation({ summary: 'Listar todas as categorias (público)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista todas as categorias cadastradas no sistema.',
+    type: [Categoria],
+  })
+  async findAllPublic(): Promise<Categoria[]> {
+    return await this.categoriaService.findAll();
+  }
+
+  // ========== ROTAS PROTEGIDAS (COM AUTENTICAÇÃO) ==========
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @Post()
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Criar uma nova categoria (ADMIN)' })
   @ApiBody({ type: CreateCategoriaDto })
   @ApiResponse({
@@ -53,6 +68,7 @@ export class CategoriaController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE')
   @Get()
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Listar todas as categorias (CLIENTE)' })
   @ApiResponse({
     status: 200,
@@ -70,6 +86,7 @@ export class CategoriaController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE')
   @Get(':id')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Buscar uma categoria pelo ID (CLIENTE)' })
   @ApiParam({
     name: 'id',
@@ -92,6 +109,7 @@ export class CategoriaController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @Patch(':id')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Atualizar uma categoria existente (ADMIN)' })
   @ApiParam({
     name: 'id',
@@ -118,6 +136,7 @@ export class CategoriaController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @Delete(':id')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Remover uma categoria (ADMIN)' })
   @ApiParam({
     name: 'id',
