@@ -15,7 +15,7 @@ import { ItemPedido } from 'src/item-pedido/entities/item-pedido.entity';
 export class CarrinhoItem {
   @ApiProperty()
   @PrimaryGeneratedColumn()
-  idCarrinhoItem: number;
+  idItem: number;
 
   @ApiProperty()
   @Column({ type: 'int', nullable: false })

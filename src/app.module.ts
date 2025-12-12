@@ -50,9 +50,9 @@ import { ImagemModule } from './imagemProduto/imagem.module';
     PedidoModule,
     PagamentoModule,
     ItemPedidoModule,
-    AuthModule
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}
