@@ -43,7 +43,6 @@ export class PagamentoService {
       );
     }
 
-    // ✔ só pode ter um pagamento ativo
     if (pedido.pagamento && pedido.pagamento.statusPag !== StatusPag.CANCELADO) {
       throw new ConflictException('Este pedido já possui um pagamento ativo.');
     }
