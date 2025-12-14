@@ -21,6 +21,13 @@ export class Carrinho {
   @Column('decimal', { precision: 10, scale: 2, default: 0 })
   total: number;
 
+  @ApiProperty({
+    example: false,
+    description: 'Indica se o carrinho foi convertido em pedido',
+  })
+  @Column({ type: 'boolean', default: false })
+  convertidoEmPedido: boolean;
+
   @ApiProperty({ type: () => Cliente })
   @OneToOne(() => Cliente, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'id_cliente' })

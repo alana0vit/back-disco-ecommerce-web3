@@ -11,6 +11,8 @@ import { CreatePagamentoDto } from './dto/create-pagamento.dto';
 import { UpdatePagamentoDto } from './dto/update-pagamento.dto';
 import { Pedido, Status as StatusPedido } from 'src/pedido/entities/pedido.entity';
 import { Produto } from 'src/produto/entities/produto.entity';
+import { ReservaEstoqueService } from 'src/produto/reserva-estoque.service';
+import { PedidoService } from 'src/pedido/pedido.service';
 
 @Injectable()
 export class PagamentoService {
@@ -23,6 +25,9 @@ export class PagamentoService {
 
     @InjectRepository(Produto)
     private readonly produtoRepository: Repository<Produto>,
+
+    private readonly reservaEstoqueService: ReservaEstoqueService,
+    private readonly pedidoService: PedidoService,
   ) {}
 
   async create(dto: CreatePagamentoDto): Promise<Pagamento> {
@@ -46,18 +51,20 @@ export class PagamentoService {
     if (pedido.pagamento && pedido.pagamento.statusPag !== StatusPag.CANCELADO) {
       throw new ConflictException('Este pedido já possui um pagamento ativo.');
     }
-
-    for (const item of pedido.itemPedidos) {
-      const produto = item.produto;
-      const reservado = await this.getQuantidadeReservada(produto.idProduto);
-
-      const disponivel = produto.estoque - reservado;
-
-      if (disponivel < item.quantidade) {
-        throw new BadRequestException(
-          `Estoque insuficiente para o produto "${produto.nome}". Disponível: ${disponivel}`,
-        );
-      }
+    const disponivel = await this.reservaEstoqueService.verificarDisponibilidade(pedido);
+    
+    if (!disponivel) {
+      throw new BadRequestException(
+        'Estoque insuficiente para um ou mais produtos do pedido.'
+      );
+    }
+    const valorPedido = pedido.valorTotal;
+    const tolerancia = 0.01;
+    
+    if (Math.abs(valor - valorPedido) > tolerancia) {
+      throw new BadRequestException(
+        `Valor do pagamento (${valor}) não corresponde ao valor do pedido (${valorPedido}).`
+      );
     }
 
     const pagamento = this.pagamentoRepository.create({
@@ -71,26 +78,12 @@ export class PagamentoService {
   }
 
   private async getQuantidadeReservada(idProduto: number): Promise<number> {
-    const pendentes = await this.pagamentoRepository
-      .createQueryBuilder('pagamento')
-      .leftJoinAndSelect('pagamento.pedido', 'pedido')
-      .leftJoinAndSelect('pedido.itemPedidos', 'itemPedidos')
-      .leftJoinAndSelect('itemPedidos.produto', 'produto')
-      .where('pagamento.statusPag = :status', { status: StatusPag.PENDENTE })
-      .andWhere('produto.idProduto = :idProduto', { idProduto })
-      .getMany();
-
-    let total = 0;
-
-    for (const pag of pendentes) {
-      for (const item of pag.pedido.itemPedidos) {
-        if (item.produto.idProduto === idProduto) {
-          total += item.quantidade;
-        }
-      }
-    }
-
-    return total;
+    const produto = await this.produtoRepository.findOne({
+      where: { idProduto },
+      select: ['estoqueReservado']
+    });
+    
+    return produto?.estoqueReservado || 0;
   }
 
   async update(id: number, dto: UpdatePagamentoDto): Promise<Pagamento> {
@@ -108,49 +101,30 @@ export class PagamentoService {
     }
 
     const pedido = pagamento.pedido;
-
     if (dto.statusPag === StatusPag.PAGO) {
       if (pagamento.statusPag === StatusPag.PAGO) {
         Object.assign(pagamento, dto);
         return await this.pagamentoRepository.save(pagamento);
       }
-
-      for (const item of pedido.itemPedidos) {
-        const produto = item.produto;
-
-        if (produto.estoque < item.quantidade) {
-          throw new BadRequestException(
-            `Estoque insuficiente para "${produto.nome}".`,
-          );
-        }
-
-        produto.estoque -= item.quantidade;
-        await this.produtoRepository.save(produto);
-      }
-
-      pedido.statusPedido = StatusPedido.PAGO;
-      await this.pedidoRepository.save(pedido);
-
+      await this.pedidoService.confirmarPagamento(pedido.idPedido);
+      
       pagamento.statusPag = StatusPag.PAGO;
       Object.assign(pagamento, dto);
+      
       return await this.pagamentoRepository.save(pagamento);
     }
-
     if (dto.statusPag === StatusPag.CANCELADO) {
       if (pagamento.statusPag === StatusPag.PAGO) {
         throw new BadRequestException(
           'Pagamento já confirmado não pode ser cancelado.',
         );
       }
-
-      pedido.statusPedido = StatusPedido.ABERTO;
-      await this.pedidoRepository.save(pedido);
-
+      await this.pedidoService.cancelarPedido(pedido.idPedido);
       pagamento.statusPag = StatusPag.CANCELADO;
       Object.assign(pagamento, dto);
+      
       return await this.pagamentoRepository.save(pagamento);
     }
-
     Object.assign(pagamento, dto);
     return await this.pagamentoRepository.save(pagamento);
   }
@@ -173,10 +147,32 @@ export class PagamentoService {
   async remove(id: number): Promise<void> {
     const pagamento = await this.pagamentoRepository.findOne({
       where: { idPag: id },
+      relations: ['pedido'],
     });
 
     if (!pagamento) throw new NotFoundException('Pagamento não encontrado.');
+    if (pagamento.statusPag === StatusPag.PENDENTE && pagamento.pedido) {
+      await this.pedidoService.cancelarPedido(pagamento.pedido.idPedido);
+    }
 
     await this.pagamentoRepository.remove(pagamento);
+  }
+  async aprovarPagamento(idPagamento: number): Promise<Pagamento> {
+    return this.update(idPagamento, { statusPag: StatusPag.PAGO });
+  }
+  async cancelarPagamento(idPagamento: number): Promise<Pagamento> {
+    return this.update(idPagamento, { statusPag: StatusPag.CANCELADO });
+  }
+  async verificarEstoqueParaPagamento(idPagamento: number): Promise<boolean> {
+    const pagamento = await this.pagamentoRepository.findOne({
+      where: { idPag: idPagamento },
+      relations: ['pedido', 'pedido.itemPedidos', 'pedido.itemPedidos.produto'],
+    });
+
+    if (!pagamento) {
+      throw new NotFoundException('Pagamento não encontrado');
+    }
+
+    return await this.reservaEstoqueService.verificarDisponibilidade(pagamento.pedido);
   }
 }

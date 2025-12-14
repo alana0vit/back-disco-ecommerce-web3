@@ -45,10 +45,17 @@ export class Produto {
 
   @ApiProperty({
     example: 30,
-    description: 'Quantidade em estoque',
+    description: 'Quantidade em estoque real',
   })
   @Column({ type: 'int', nullable: false })
   estoque: number;
+
+  @ApiProperty({
+    example: 30,
+    description: 'Quantidade em estoque disponivel',
+  })
+  @Column({type: 'int', default: 0} )
+  estoqueReservado: number;
 
   @ApiProperty({
     example: true,
@@ -88,4 +95,8 @@ export class Produto {
     eager: false,
   })
   itemPedidos: ItemPedido[];
+
+  get estoqueDisponivel(): number {
+    return this.estoque - this.estoqueReservado;
+  }
 }

@@ -50,6 +50,7 @@ export class ProdutoService {
     const produto = this.produtoRepository.create({
       ...createProdutoDto,
       ativo: createProdutoDto.ativo ?? true,
+      estoqueReservado: 0,
       categoria,
       imagem,
     });
@@ -61,18 +62,15 @@ export class ProdutoService {
       relations: ['categoria', 'imagem'],
       where: { ativo: true },
     });
-    return Promise.all(
-      produtos.map(async (produto) => {
-        const reservado = await this.getQuantidadeReservada(produto.idProduto);
-        return {
-          ...produto,
-          imagemUrl: produto.imagem
-            ? this.getImageUrl(produto.imagem.caminho)
-            : null,
-          estoqueDisponivel: produto.estoque - reservado,
-        };
-      }),
-    );
+    return produtos.map((produto) => ({
+      ...produto,
+      imagemUrl: produto.imagem
+        ? this.getImageUrl(produto.imagem.caminho)
+        : null,
+      estoqueDisponivel: produto.estoqueDisponivel,
+      estoqueReservado: produto.estoqueReservado,
+      estoqueTotal: produto.estoque,
+    }));
   }
 
   async findOneWithDisponivel(id: number): Promise<any> {
@@ -84,24 +82,22 @@ export class ProdutoService {
       relations: ['categoria', 'imagem'],
     });
     if (!produto) throw new NotFoundException('Produto não encontrado');
-    const reservado = await this.getQuantidadeReservada(produto.idProduto);
+    
     return {
       ...produto,
       imagemUrl: produto.imagem ? this.getImageUrl(produto.imagem.caminho) : null,
-      estoqueDisponivel: produto.estoque - reservado,
+      estoqueDisponivel: produto.estoqueDisponivel,
+      estoqueReservado: produto.estoqueReservado,
+      estoqueTotal: produto.estoque,
     };
   }
 
   private async getQuantidadeReservada(idProduto: number): Promise<number> {
-    const pendentes = await this.pagamentoRepository
-      .createQueryBuilder('pagamento')
-      .leftJoin('pagamento.pedido', 'pedido')
-      .leftJoin('pedido.itemPedidos', 'itemPedidos')
-      .where('pagamento.statusPag = :status', { status: StatusPag.PENDENTE })
-      .andWhere('itemPedidos.id_produto_itpdd = :idProduto', { idProduto })
-      .select('SUM(itemPedidos.quantidade)', 'reservado')
-      .getRawOne();
-    return Number(pendentes?.reservado ?? 0);
+    const produto = await this.produtoRepository.findOne({
+      where: { idProduto },
+      select: ['estoqueReservado']
+    });
+    return produto?.estoqueReservado || 0;
   }
 
   async findWithFilters(
@@ -145,6 +141,7 @@ export class ProdutoService {
       relations: ['categoria', 'imagem'],
     });
     if (!produto) throw new NotFoundException('Produto não encontrado');
+    
     if (updateProdutoDto.id_categoria_prod) {
       const categoria = await this.categoriaRepository.findOne({
         where: { idCategoria: updateProdutoDto.id_categoria_prod },
@@ -154,6 +151,7 @@ export class ProdutoService {
       }
       produto.categoria = categoria;
     }
+    
     if (file) {
       const caminho = `/uploads/${file.filename}`;
       if (produto.imagem) {
@@ -177,6 +175,7 @@ export class ProdutoService {
         produto.imagem = null;
       }
     }
+    
     Object.assign(produto, updateProdutoDto);
     return await this.produtoRepository.save(produto);
   }
@@ -184,5 +183,17 @@ export class ProdutoService {
   async remove(id: number): Promise<void> {
     const produto = await this.findOneWithDisponivel(id);
     await this.produtoRepository.remove(produto);
+  }
+
+  async verificarEstoqueDisponivel(idProduto: number, quantidade: number): Promise<boolean> {
+    const produto = await this.produtoRepository.findOne({
+      where: { idProduto },
+      select: ['estoque', 'estoqueReservado']
+    });
+    
+    if (!produto) return false;
+    
+    const estoqueDisponivel = produto.estoque - produto.estoqueReservado;
+    return estoqueDisponivel >= quantidade;
   }
 }

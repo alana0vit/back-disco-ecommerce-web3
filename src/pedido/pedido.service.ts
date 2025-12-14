@@ -15,6 +15,7 @@ import { Produto } from 'src/produto/entities/produto.entity';
 import { Carrinho } from 'src/carrinho/entities/carrinho.entity';
 import { CarrinhoItem } from 'src/carrinho-item/entities/carrinho-item.entity';
 import { Status } from 'src/pedido/entities/pedido.entity';
+import { ReservaEstoqueService } from 'src/produto/reserva-estoque.service';
 
 @Injectable()
 export class PedidoService {
@@ -39,6 +40,8 @@ export class PedidoService {
 
     @InjectRepository(CarrinhoItem)
     private readonly carrinhoItemRepository: Repository<CarrinhoItem>,
+
+    private readonly reservaEstoqueService: ReservaEstoqueService, // ← INJETE
   ) { }
 
   async create(dto: CreatePedidoDto, idCarrinho: number): Promise<Pedido> {
@@ -67,24 +70,25 @@ export class PedidoService {
           `Produto ${item.produto.nome} está inativo e não pode ser comprado.`,
         );
 
-      if (item.produto.estoque < item.quantidade)
+      const estoqueDisponivel = item.produto.estoque - item.produto.estoqueReservado;
+      if (estoqueDisponivel < item.quantidade)
         throw new BadRequestException(
-          `Estoque insuficiente para o produto ${item.produto.nome}`,
+          `Estoque insuficiente para o produto ${item.produto.nome}. ` +
+          `Disponível: ${estoqueDisponivel}, Solicitado: ${item.quantidade}`
         );
     }
-
     const itensPedido = carrinho.itens.map((item) =>
       this.itemPedidoRepository.create({
         produto: item.produto,
         quantidade: item.quantidade,
         valorUnitario: item.produto.preco,
         valorTotal: item.quantidade * item.produto.preco,
+        carrinhoItem: item,
       }),
     );
 
-    const valorTotal = itensPedido.reduce((total, item) => total + Number(item.valorTotal), 0,);
-    const qtdTotal = itensPedido.reduce((total, item) => total + item.quantidade, 0,);
-
+    const valorTotal = itensPedido.reduce((total, item) => total + Number(item.valorTotal), 0);
+    const qtdTotal = itensPedido.reduce((total, item) => total + item.quantidade, 0);
     const pedido = this.pedidoRepository.create({
       cliente: carrinho.cliente,
       itemPedidos: itensPedido,
@@ -92,10 +96,23 @@ export class PedidoService {
       qtdTotal,
       statusPedido: Status.AGUARDANDO,
       carrinho,
+      endereco,
+      descricao,
     });
+    const pedidoSalvo = await this.pedidoRepository.save(pedido);
 
-    return await this.pedidoRepository.save(pedido);
+    try {
+      await this.reservaEstoqueService.reservarEstoque(pedidoSalvo);
+      carrinho.convertidoEmPedido = true;
+      await this.carrinhoRepository.save(carrinho);
 
+      return pedidoSalvo;
+    } catch (error) {
+      await this.pedidoRepository.remove(pedidoSalvo);
+      throw new BadRequestException(
+        `Falha ao criar pedido: ${error.message}`
+      );
+    }
   }
 
   async findAllByCliente(idCliente: number): Promise<Pedido[]> {
@@ -120,19 +137,24 @@ export class PedidoService {
       where: { idPedido: id },
       relations: ['itemPedidos', 'pagamento', 'cliente', 'endereco'],
     });
+    
     if (!pedido) {
       throw new NotFoundException('Pedido não encontrado!');
     }
+    
     if (pedido.statusPedido === Status.PAGO) {
       throw new Error('Não é possível editar um pedido já pago.');
     }
+    
     Object.assign(pedido, updatePedidoDto);
+    
     if (
       updatePedidoDto.item_pedidos &&
       updatePedidoDto.item_pedidos.length > 0
     ) {
       let novoTotal = 0;
       let novaQtd = 0;
+      
       for (const item of updatePedidoDto.item_pedidos) {
         const subtotal = item.quantidade * item.valorUnitario;
         novoTotal += subtotal;
@@ -147,10 +169,55 @@ export class PedidoService {
   async remove(id: number): Promise<void> {
     const pedido = await this.findOne(id);
     if (!pedido) throw new NotFoundException();
-
     if (pedido.statusPedido === Status.PAGO)
       throw new BadRequestException('Pedido pago não pode ser removido.');
-
+    await this.reservaEstoqueService.liberarEstoque(pedido.idPedido);
     await this.pedidoRepository.remove(pedido);
+  }
+
+  async confirmarPagamento(idPedido: number): Promise<Pedido> {
+    const pedido = await this.pedidoRepository.findOne({
+      where: { idPedido },
+      relations: ['itemPedidos', 'itemPedidos.produto', 'pagamento'],
+    });
+    if (!pedido) {
+      throw new NotFoundException('Pedido não encontrado');
+    }
+    if (pedido.statusPedido === Status.PAGO) {
+      throw new BadRequestException('Pedido já está pago');
+    }
+    if (!pedido.pagamento || pedido.pagamento.statusPag !== 'Pago') {
+      throw new BadRequestException('Pagamento não aprovado ou não encontrado');
+    }
+    await this.reservaEstoqueService.confirmarEstoque(pedido.idPedido);
+    pedido.statusPedido = Status.PAGO;
+        return await this.pedidoRepository.save(pedido);
+  }
+
+  async cancelarPedido(idPedido: number): Promise<Pedido> {
+    const pedido = await this.pedidoRepository.findOne({
+      where: { idPedido },
+      relations: ['itemPedidos', 'itemPedidos.produto'],
+    });
+    if (!pedido) {
+      throw new NotFoundException('Pedido não encontrado');
+    }
+    if (pedido.statusPedido === Status.PAGO) {
+      throw new BadRequestException('Pedido pago não pode ser cancelado');
+    }
+    await this.reservaEstoqueService.liberarEstoque(pedido.idPedido);
+    pedido.statusPedido = Status.CANCELADO;
+    return await this.pedidoRepository.save(pedido);
+  }
+
+  async verificarDisponibilidade(idPedido: number): Promise<boolean> {
+    const pedido = await this.pedidoRepository.findOne({
+      where: { idPedido },
+      relations: ['itemPedidos', 'itemPedidos.produto'],
+    });
+    if (!pedido) {
+      throw new NotFoundException('Pedido não encontrado');
+    }
+    return await this.reservaEstoqueService.verificarDisponibilidade(pedido);
   }
 }
