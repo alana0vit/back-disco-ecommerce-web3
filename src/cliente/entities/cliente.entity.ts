@@ -83,6 +83,24 @@ export class Cliente {
   dataNasc: Date;
 
   @ApiProperty({
+    description: 'Token para resetar a senha',
+  })
+  @Column({ nullable: true, type: 'varchar' })
+  resetPasswordToken: string | null;
+
+  @ApiProperty({
+    description: 'Data de expiração do token',
+  })
+  @Column({ nullable: true, type: 'timestamp' })
+  resetPasswordExpires: Date | null;
+
+  @ApiProperty({
+    description: 'Se o email foi verificado',
+  })
+  @Column({ type: 'boolean', default: false })
+  isVerified: boolean;
+
+  @ApiProperty({
     type: () => [Endereco],
     description: 'Endereços cadastrados para o cliente',
   })
@@ -102,7 +120,6 @@ export class Cliente {
   })
   pedidos: Pedido[];
 
-  // ➕➕➕ ADICIONADO AGORA (sem alterar mais nada)
   @ApiProperty({
     type: () => [Carrinho],
     description: 'Carrinhos associados ao cliente',
