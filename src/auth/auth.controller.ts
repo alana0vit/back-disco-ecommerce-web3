@@ -23,7 +23,6 @@ export class AuthController {
     description: 'Credenciais inválidas.',
   })
   async login(@Body() dto: LoginDto) {
-    // ALTERADO: Passar email em vez de nome
     const user = await this.authService.validateUser(dto.email, dto.senha);
 
     if (!user) {

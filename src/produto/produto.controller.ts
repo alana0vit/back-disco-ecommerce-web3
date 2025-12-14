@@ -10,6 +10,7 @@ import {
   UseInterceptors,
   UploadedFile,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -34,84 +35,7 @@ import { Roles } from '../auth/roles.decorator';
 @ApiTags('Produtos')
 @Controller('produto')
 export class ProdutoController {
-  constructor(private readonly produtoService: ProdutoService) {}
-
-  // ========== ROTAS PÚBLICAS (SEM AUTENTICAÇÃO) ==========
-
-  @Get('public')
-  @ApiOperation({ summary: 'Listar todos os produtos (público)' })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista de produtos retornada com sucesso',
-    type: [Produto],
-  })
-  async findAllPublic(): Promise<Produto[]> {
-    return await this.produtoService.findAll();
-  }
-
-  @Get('public/filtro')
-  @ApiOperation({
-    summary: 'Filtrar produtos por nome, categoria e preço (público)',
-  })
-  @ApiQuery({
-    name: 'nome',
-    required: false,
-    description: 'Filtrar pelo nome do produto',
-  })
-  @ApiQuery({
-    name: 'categoria',
-    required: false,
-    description: 'Filtrar pela categoria do produto',
-  })
-  @ApiQuery({
-    name: 'precoMin',
-    required: false,
-    description: 'Preço mínimo',
-    example: 10,
-  })
-  @ApiQuery({
-    name: 'precoMax',
-    required: false,
-    description: 'Preço máximo',
-    example: 100,
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista filtrada de produtos retornada com sucesso',
-    type: [Produto],
-  })
-  async findWithFiltersPublic(
-    @Query('nome') nome?: string,
-    @Query('categoria') categoria?: string,
-    @Query('precoMin') precoMin?: string,
-    @Query('precoMax') precoMax?: string,
-  ): Promise<Produto[]> {
-    const precoMinNum =
-      precoMin && !isNaN(Number(precoMin)) ? Number(precoMin) : undefined;
-    const precoMaxNum =
-      precoMax && !isNaN(Number(precoMax)) ? Number(precoMax) : undefined;
-
-    return await this.produtoService.findWithFilters(
-      nome,
-      categoria,
-      precoMinNum,
-      precoMaxNum,
-    );
-  }
-
-  @Get('public/:id')
-  @ApiOperation({ summary: 'Buscar produto pelo ID (público)' })
-  @ApiParam({ name: 'id', description: 'ID do produto' })
-  @ApiResponse({
-    status: 200,
-    description: 'Produto retornado com sucesso',
-  })
-  @ApiResponse({ status: 404, description: 'Produto não encontrado' })
-  async findOnePublic(@Param('id') id: string) {
-    return await this.produtoService.findOneWithDisponivel(+id);
-  }
-
-  // ========== ROTAS PROTEGIDAS (COM AUTENTICAÇÃO) ==========
+  constructor(private readonly produtoService: ProdutoService) { }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
@@ -144,7 +68,7 @@ export class ProdutoController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Get()
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Listar todos os produtos' })
@@ -158,7 +82,7 @@ export class ProdutoController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Get('filtro')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Filtrar produtos por nome, categoria e preço' })
@@ -209,7 +133,7 @@ export class ProdutoController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Get(':id')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Buscar produto pelo ID (com disponibilidade)' })
@@ -220,6 +144,10 @@ export class ProdutoController {
   })
   @ApiResponse({ status: 404, description: 'Produto não encontrado' })
   async findOneWithDisponivel(@Param('id') id: string) {
+    const idNumber = Number(id);
+    if (isNaN(idNumber) || idNumber <= 0) {
+      throw new BadRequestException('ID do produto deve ser um número válido e positivo');
+    }
     return await this.produtoService.findOneWithDisponivel(+id);
   }
 

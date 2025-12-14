@@ -14,10 +14,6 @@ API REST desenvolvida com **NestJS**, **TypeORM** e **MySQL**, para gerenciar to
 
 ---
 
-## 🧱 Estrutura do Projeto
-
-<img width="580" height="815" alt="image" src="https://github.com/user-attachments/assets/a8c5c77b-73bb-440b-bb02-082db941cd0f" />
-
 > Cada módulo foi gerado via `nest g resource nome`, contendo suas pastas `dto/` e `entities/` para manter o padrão de camadas limpo e escalável.
 
 ---
@@ -65,62 +61,6 @@ npm run start:prod
 | `npm run test` | Executa testes automatizados |
 
 ---
-
-## 🧠 Principais Módulos
-
-| Módulo | Descrição |
-|--------|------------|
-| **Produto** | CRUD de produtos, com filtros, relação com categorias e controle de disponibilidade |
-| **Categoria** | Gerenciamento das categorias de produtos |
-| **Cliente** | Cadastro e consulta de clientes |
-| **Endereço** | Endereços associados aos clientes |
-| **Pedido** | Criação e gerenciamento de pedidos |
-| **Item Pedido** | Relação entre pedidos e produtos |
-| **Pagamento** | Processamento e status de pagamentos |
-
----
-
-## 📡 Rotas
-
-| Método | Rota | Descrição |
-|--------|------|------------|
-| `GET` | `/produto` | Lista todos os produtos ativos |
-| `POST` | `/produto` | Cria um novo produto |
-| `GET` | `/produto/:id` | Busca produto por ID |
-| `GET` | `/produto/filtro` | Filtra produtos por nome, categoria e min/max de preço |
-| `PATCH` | `/produto/:id` | Atualiza dados de um produto |
-| `DELETE` | `/produto/:id` | Remove um produto |
-| `GET` | `/cliente` | Lista todos os clientes ativos |
-| `POST` | `/cliente` | Cria um novo cliente |
-| `GET` | `/cliente/:id` | Busca cliente por ID |
-| `PATCH` | `/cliente/:id` | Atualiza dados de um cliente |
-| `DELETE` | `/cliente/:id` | Remove um cliente |
-| `GET` | `/endereco` | Lista todos os endereços |
-| `POST` | `/endereco` | Cria um novo endereço |
-| `GET` | `/endereco/:id` | Busca endereço por ID |
-| `PATCH` | `/endereco/:id` | Atualiza dados de um endereço |
-| `PATCH` | `/endereco/padrao/:id` | Define um endereço como padrão |
-| `DELETE` | `/endereco/:id` | Remove um endereço |
-| `GET` | `/categoria` | Lista todos os categorias |
-| `POST` | `/categoria` | Cria uma nova categoria |
-| `GET` | `/categoria/:id` | Busca categoria por ID |
-| `PATCH` | `/categoria/:id` | Atualiza dados de uma categoria |
-| `DELETE` | `/categoria/:id` | Remove uma categoria |
-| `GET` | `/pedido/lista/:id` | Lista todos os pedidos de um cliente|
-| `POST` | `/pedido` | Cria um novo pedido |
-| `GET` | `/pedido/:id` | Busca pedido por ID |
-| `PATCH` | `/pedido/:id` | Atualiza dados de um pedido |
-| `DELETE` | `/pedido/:id` | Remove um pedido |
-| `GET` | `/pagamento` | Lista todos os pagamentos|
-| `POST` | `/pagamento` | Cria um novo pagamento |
-| `GET` | `/pagamento/:id` | Busca pagamento por ID |
-| `PATCH` | `/pagamento/:id` | Atualiza dados de um pagamento |
-| `DELETE` | `/pagamento/:id` | Remove um pagamento |
-| `GET` | `/item-pedido` | Lista todos os itens de um pedido |
-| `POST` | `/item-pedido` | Cria um novo item|
-| `GET` | `/item-pedido/:id` | Busca item por ID |
-| `PATCH` | `/item-pedido/:id` | Atualiza dados de um item |
-| `DELETE` | `/item-pedido/:id` | Remove um item |
 
 > O projeto roda na URL: http://localhost:3000
 

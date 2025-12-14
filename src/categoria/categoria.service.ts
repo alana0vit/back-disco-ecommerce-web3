@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCategoriaDto } from './dto/create-categoria.dto';
 import { UpdateCategoriaDto } from './dto/update-categoria.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -10,7 +10,7 @@ export class CategoriaService {
   constructor(
     @InjectRepository(Categoria)
     private readonly categoriaRepository: Repository<Categoria>,
-  ) {}
+  ) { }
 
   async create(createCategoriaDto: CreateCategoriaDto): Promise<Categoria> {
     const categoria = this.categoriaRepository.create(createCategoriaDto);
@@ -22,6 +22,9 @@ export class CategoriaService {
   }
 
   async findOne(id: number): Promise<Categoria> {
+    if (isNaN(id) || id <= 0) {
+      throw new BadRequestException('ID da categoria inválido');
+    }
     const categoria = await this.categoriaRepository.findOneBy({
       idCategoria: id,
     });

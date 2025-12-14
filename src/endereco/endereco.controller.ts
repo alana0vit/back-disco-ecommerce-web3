@@ -31,7 +31,7 @@ export class EnderecoController {
   constructor(private readonly enderecoService: EnderecoService) {}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Post(':idCliente')
   @ApiOperation({ summary: 'Cria um endereço para um cliente' })
   @ApiParam({ name: 'idCliente', type: Number, description: 'ID do cliente' })
@@ -44,7 +44,7 @@ export class EnderecoController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Get()
   @ApiOperation({ summary: 'Lista todos os endereços' })
   @ApiResponse({ status: 200, description: 'Lista retornada com sucesso' })
@@ -53,7 +53,7 @@ export class EnderecoController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Get(':id')
   @ApiOperation({ summary: 'Busca um endereço pelo ID' })
   @ApiParam({ name: 'id', type: Number, description: 'ID do endereço' })
@@ -64,7 +64,7 @@ export class EnderecoController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Patch(':id')
   @ApiOperation({ summary: 'Atualiza um endereço pelo ID' })
   @ApiParam({ name: 'id', type: Number, description: 'ID do endereço' })
@@ -77,7 +77,7 @@ export class EnderecoController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Patch('padrao/:id')
   @ApiOperation({ summary: 'Define um endereço como padrão' })
   @ApiParam({ name: 'id', type: Number, description: 'ID do endereço' })
@@ -90,7 +90,7 @@ export class EnderecoController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Delete(':id')
   @ApiOperation({ summary: 'Remove um endereço pelo ID' })
   @ApiParam({ name: 'id', type: Number, description: 'ID do endereço' })

@@ -25,7 +25,7 @@ export class CarrinhoItemController {
 
   @Post(':idCarrinho')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @ApiOperation({ summary: 'Adiciona um item ao carrinho' })
   @ApiParam({ name: 'idCarrinho', description: 'ID do carrinho', example: 1 })
   @ApiBody({ type: CreateCarrinhoItemDto })
@@ -39,7 +39,7 @@ export class CarrinhoItemController {
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @ApiOperation({ summary: 'Lista todos os itens (ADMIN)' })
   @ApiResponse({ status: 200, description: 'Lista de itens retornada' })
   async findAll() {
@@ -48,7 +48,7 @@ export class CarrinhoItemController {
 
   @Get(':idItem')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @ApiParam({ name: 'idItem', description: 'ID do item', example: 1 })
   @ApiOperation({ summary: 'Busca item do carrinho por ID' })
   @ApiResponse({ status: 200, description: 'Item retornado' })
@@ -58,7 +58,7 @@ export class CarrinhoItemController {
 
   @Patch(':idItem')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @ApiOperation({ summary: 'Atualiza quantidade do item' })
   @ApiParam({ name: 'idItem', description: 'ID do item', example: 1 })
   @ApiBody({ type: UpdateCarrinhoItemDto })
@@ -72,7 +72,7 @@ export class CarrinhoItemController {
 
   @Delete(':idItem')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @ApiOperation({ summary: 'Remove um item do carrinho' })
   @ApiParam({ name: 'idItem', description: 'ID do item', example: 1 })
   @ApiResponse({ status: 200, description: 'Item removido' })

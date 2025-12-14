@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-import { PartialType } from '@nestjs/swagger';
-import { CreateCarrinhoDto } from './create-carrinho.dto';
-
-export class UpdateCarrinhoDto extends PartialType(CreateCarrinhoDto) {}
-=======
 import { PartialType, ApiPropertyOptional } from '@nestjs/swagger';
 import { CreateCarrinhoDto } from './create-carrinho.dto';
 import { IsOptional, IsNumber, Min } from 'class-validator';
@@ -15,4 +9,3 @@ export class UpdateCarrinhoDto extends PartialType(CreateCarrinhoDto) {
   @Min(0)
   total?: number;
 }
->>>>>>> f176d0075cf5640f5ef0f80e4ce575b37ef547b9

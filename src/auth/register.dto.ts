@@ -19,7 +19,7 @@ export enum Role {
 export class RegisterDto {
   @ApiProperty({
     description: 'Nome do usuário',
-    example: 'Alana Silva',
+    example: 'Maria',
   })
   @IsString()
   @IsNotEmpty()
@@ -27,7 +27,7 @@ export class RegisterDto {
 
   @ApiProperty({
     description: 'Email válido do usuário',
-    example: 'alana@gmail.com',
+    example: 'maria@gmail.com',
   })
   @IsEmail()
   @IsNotEmpty()

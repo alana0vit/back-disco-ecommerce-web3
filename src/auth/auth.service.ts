@@ -15,8 +15,6 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, senhaRecebida: string): Promise<any> {
-    // ← ALTERADO: nome → email
-    // Buscar por email ao invés de nome
     const user = await this.clienteRepository.findOne({ where: { email } });
 
     console.log('Validating user by email:', email, 'Found user:', user);
@@ -33,7 +31,6 @@ export class AuthService {
     return {
       access_token: this.jwtService.sign(payload),
       user: {
-        // ← ADICIONE ISSO para retornar os dados do usuário
         id: user.idCliente,
         nome: user.nome,
         email: user.email,
@@ -45,7 +42,6 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-    // Verificar se email já existe
     const existingUser = await this.clienteRepository.findOne({
       where: { email: dto.email },
     });
@@ -62,12 +58,11 @@ export class AuthService {
       senha: hashedPassword,
       dataNasc: dto.dataNasc,
       telefone: dto.telefone,
-      ativo: dto.ativo !== undefined ? dto.ativo : true, // Default true
+      ativo: dto.ativo !== undefined ? dto.ativo : true,
     });
 
     const savedUser = await this.clienteRepository.save(user);
 
-    // Retornar dados sem a senha
     const { senha, ...userWithoutPassword } = savedUser;
     return userWithoutPassword;
   }

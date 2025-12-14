@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Produto } from './entities/produto.entity';
@@ -76,6 +76,9 @@ export class ProdutoService {
   }
 
   async findOneWithDisponivel(id: number): Promise<any> {
+    if (isNaN(id) || id <= 0) {
+      throw new BadRequestException('ID do produto inválido');
+    }
     const produto = await this.produtoRepository.findOne({
       where: { idProduto: id },
       relations: ['categoria', 'imagem'],

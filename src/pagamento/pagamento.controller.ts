@@ -24,7 +24,7 @@ export class PagamentoController {
   constructor(private readonly pagamentoService: PagamentoService) {}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Post()
   @ApiOperation({ summary: 'Cria um novo pagamento' })
   @ApiResponse({ status: 201, description: 'Pagamento criado com sucesso.' })
@@ -35,7 +35,7 @@ export class PagamentoController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Get()
   @ApiOperation({ summary: 'Lista todos os pagamentos' })
   @ApiResponse({ status: 200, description: 'Lista de pagamentos retornada com sucesso.' })
@@ -44,7 +44,7 @@ export class PagamentoController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Get(':id')
   @ApiOperation({ summary: 'Busca um pagamento pelo ID' })
   @ApiParam({ name: 'id', description: 'ID do pagamento' })
@@ -55,7 +55,7 @@ export class PagamentoController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Patch(':id')
   @ApiOperation({ summary: 'Atualiza um pagamento pelo ID' })
   @ApiParam({ name: 'id', description: 'ID do pagamento' })
@@ -68,7 +68,7 @@ export class PagamentoController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Delete(':id')
   @ApiOperation({ summary: 'Remove um pagamento pelo ID' })
   @ApiParam({ name: 'id', description: 'ID do pagamento' })

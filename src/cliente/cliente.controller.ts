@@ -28,7 +28,7 @@ export class ClienteController {
   constructor(private readonly clienteService: ClienteService) {}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Get()
   @ApiOperation({ summary: 'Lista todos os clientes' })
   @ApiResponse({
@@ -41,7 +41,7 @@ export class ClienteController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Get(':id')
   @ApiOperation({ summary: 'Busca um cliente pelo ID' })
   @ApiResponse({
@@ -58,7 +58,7 @@ export class ClienteController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Patch(':id')
   @ApiOperation({ summary: 'Atualiza os dados de um cliente' })
   @ApiBody({ type: UpdateClienteDto })
@@ -79,7 +79,7 @@ export class ClienteController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Delete(':id')
   @ApiOperation({ summary: 'Remove um cliente pelo ID' })
   @ApiResponse({

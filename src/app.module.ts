@@ -15,6 +15,7 @@ import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ImagemModule } from './imagemProduto/imagem.module';
 import { CarrinhoModule } from './carrinho/carrinho.module';
+import { CarrinhoItemModule } from './carrinho-item/carrinho-item.module';
 
 @Module({
   imports: [
@@ -52,7 +53,8 @@ import { CarrinhoModule } from './carrinho/carrinho.module';
     PagamentoModule,
     ItemPedidoModule,
     AuthModule,
-    CarrinhoModule
+    CarrinhoModule,
+    CarrinhoItemModule
   ],
   controllers: [AppController],
   providers: [AppService],

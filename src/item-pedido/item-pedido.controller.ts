@@ -24,7 +24,7 @@ export class ItemPedidoController {
   constructor(private readonly itemPedidoService: ItemPedidoService) { }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Post()
   @ApiOperation({ summary: 'Cria um novo item de pedido' })
   @ApiResponse({ status: 201, description: 'Item do pedido criado com sucesso.' })
@@ -35,7 +35,7 @@ export class ItemPedidoController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Get()
   @ApiOperation({ summary: 'Lista todos os itens de pedido' })
   @ApiResponse({ status: 200, description: 'Lista de itens do pedido retornada com sucesso.' })
@@ -44,7 +44,7 @@ export class ItemPedidoController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Get(':id')
   @ApiOperation({ summary: 'Busca um item do pedido pelo ID' })
   @ApiParam({ name: 'id', description: 'ID do item do pedido' })
@@ -55,7 +55,7 @@ export class ItemPedidoController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Patch(':id')
   @ApiOperation({ summary: 'Atualiza um item do pedido' })
   @ApiParam({ name: 'id', description: 'ID do item do pedido' })
@@ -68,7 +68,7 @@ export class ItemPedidoController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Delete(':id')
   @ApiOperation({ summary: 'Remove um item do pedido' })
   @ApiParam({ name: 'id', description: 'ID do item do pedido' })

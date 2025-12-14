@@ -32,7 +32,7 @@ export class PedidoController {
 
   @Post('/:idCarrinho')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @ApiOperation({ summary: 'Cria um novo pedido' })
   @ApiResponse({ status: 201, description: 'Pedido criado com sucesso.' })
   async create(
@@ -43,7 +43,7 @@ export class PedidoController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Get('lista/:id')
   @ApiOperation({ summary: 'Lista todos os pedidos de um cliente específico' })
   @ApiParam({ name: 'id', description: 'ID do cliente' })
@@ -53,7 +53,7 @@ export class PedidoController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Get(':id')
   @ApiOperation({ summary: 'Busca um pedido pelo ID' })
   @ApiParam({ name: 'id', description: 'ID do pedido' })
@@ -64,7 +64,7 @@ export class PedidoController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Patch(':id')
   @ApiOperation({ summary: 'Atualiza um pedido pelo ID' })
   @ApiParam({ name: 'id', description: 'ID do pedido' })
@@ -77,7 +77,7 @@ export class PedidoController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Delete(':id')
   @ApiOperation({ summary: 'Remove um pedido pelo ID' })
   @ApiParam({ name: 'id', description: 'ID do pedido' })

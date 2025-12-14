@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import { CategoriaService } from './categoria.service';
 import { Categoria } from './entities/categoria.entity';
@@ -27,22 +28,7 @@ import {
 @ApiTags('Categorias')
 @Controller('categoria')
 export class CategoriaController {
-  constructor(private readonly categoriaService: CategoriaService) {}
-
-  // ========== ROTA PÚBLICA (SEM AUTENTICAÇÃO) ==========
-
-  @Get('public')
-  @ApiOperation({ summary: 'Listar todas as categorias (público)' })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista todas as categorias cadastradas no sistema.',
-    type: [Categoria],
-  })
-  async findAllPublic(): Promise<Categoria[]> {
-    return await this.categoriaService.findAll();
-  }
-
-  // ========== ROTAS PROTEGIDAS (COM AUTENTICAÇÃO) ==========
+  constructor(private readonly categoriaService: CategoriaService) { }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
@@ -66,10 +52,10 @@ export class CategoriaController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Get()
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Listar todas as categorias (CLIENTE)' })
+  @ApiOperation({ summary: 'Listar todas as categorias' })
   @ApiResponse({
     status: 200,
     description: 'Lista todas as categorias cadastradas no sistema.',
@@ -84,10 +70,10 @@ export class CategoriaController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   @Get(':id')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Buscar uma categoria pelo ID (CLIENTE)' })
+  @ApiOperation({ summary: 'Buscar uma categoria pelo ID' })
   @ApiParam({
     name: 'id',
     description: 'ID da categoria que será buscada',
@@ -103,6 +89,10 @@ export class CategoriaController {
     description: 'Categoria não encontrada.',
   })
   async findOne(@Param('id') id: string): Promise<Categoria> {
+    const idNumber = Number(id);
+    if (isNaN(idNumber) || idNumber <= 0) {
+      throw new BadRequestException('ID da categoria deve ser um número válido e positivo');
+    }
     return await this.categoriaService.findOne(+id);
   }
 

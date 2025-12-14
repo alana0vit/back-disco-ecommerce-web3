@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-export class Carrinho {}
-=======
 import { ApiProperty } from '@nestjs/swagger';
 import { Cliente } from 'src/cliente/entities/cliente.entity';
 import { CarrinhoItem } from 'src/carrinho-item/entities/carrinho-item.entity';
@@ -41,4 +38,3 @@ export class Carrinho {
   pedido: Pedido;
 
 }
->>>>>>> f176d0075cf5640f5ef0f80e4ce575b37ef547b9
