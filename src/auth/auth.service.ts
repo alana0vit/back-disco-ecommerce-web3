@@ -12,14 +12,16 @@ export class AuthService {
     @InjectRepository(Cliente)
     private readonly clienteRepository: Repository<Cliente>,
     private readonly jwtService: JwtService,
-  ) { }
+  ) {}
 
-  async validateUser(nome: string, senhaRecebida: string): Promise<any> {
-    const user = await this.clienteRepository.findOne({ where: { nome } });
+  async validateUser(email: string, senhaRecebida: string): Promise<any> {
+    // ← ALTERADO: nome → email
+    // Buscar por email ao invés de nome
+    const user = await this.clienteRepository.findOne({ where: { email } });
 
-    console.log('Validating user:', nome, 'Found user:', user);
+    console.log('Validating user by email:', email, 'Found user:', user);
 
-    if (user && await bcrypt.compare(senhaRecebida, user.senha)) {
+    if (user && (await bcrypt.compare(senhaRecebida, user.senha))) {
       const { senha, ...result } = user;
       return result;
     }
@@ -27,13 +29,31 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const payload = { nome: user.nome, sub: user.idCliente, role: user.role };
+    const payload = { email: user.email, sub: user.idCliente, role: user.role };
     return {
       access_token: this.jwtService.sign(payload),
+      user: {
+        // ← ADICIONE ISSO para retornar os dados do usuário
+        id: user.idCliente,
+        nome: user.nome,
+        email: user.email,
+        role: user.role,
+        telefone: user.telefone,
+        dataNasc: user.dataNasc,
+      },
     };
   }
 
   async register(dto: RegisterDto) {
+    // Verificar se email já existe
+    const existingUser = await this.clienteRepository.findOne({
+      where: { email: dto.email },
+    });
+
+    if (existingUser) {
+      throw new Error('Email já cadastrado');
+    }
+
     const hashedPassword = await bcrypt.hash(dto.senha, 10);
     const user = this.clienteRepository.create({
       email: dto.email,
@@ -42,8 +62,13 @@ export class AuthService {
       senha: hashedPassword,
       dataNasc: dto.dataNasc,
       telefone: dto.telefone,
-      ativo: dto.ativo
+      ativo: dto.ativo !== undefined ? dto.ativo : true, // Default true
     });
-    return this.clienteRepository.save(user);
+
+    const savedUser = await this.clienteRepository.save(user);
+
+    // Retornar dados sem a senha
+    const { senha, ...userWithoutPassword } = savedUser;
+    return userWithoutPassword;
   }
 }

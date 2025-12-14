@@ -15,7 +15,7 @@ export enum StatusPag {
   CANCELADO = 'Cancelado',
 }
 
-enum Metodo {
+export enum Metodo {
   CARTAO = 'Cartão',
   BOLETO = 'Boleto',
   PIX = 'Pix',

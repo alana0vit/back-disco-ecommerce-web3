@@ -101,4 +101,8 @@ export class CreatePedidoDto {
   @ValidateNested()
   @Type(() => CreatePagamentoDto)
   id_pagamento?: CreatePagamentoDto;
+
+  @ApiProperty()
+  @IsNumber()
+  id_carrinho: number;
 }

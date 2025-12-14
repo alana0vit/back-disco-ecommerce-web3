@@ -7,10 +7,12 @@ import { Endereco } from 'src/endereco/entities/endereco.entity';
 import { Cliente } from 'src/cliente/entities/cliente.entity';
 import { Produto } from 'src/produto/entities/produto.entity';
 import { ItemPedido } from 'src/item-pedido/entities/item-pedido.entity';
+import { Carrinho } from 'src/carrinho/entities/carrinho.entity';
+import { CarrinhoItem } from 'src/carrinho-item/entities/carrinho-item.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Pedido, Endereco, Cliente, Produto, ItemPedido]),
+    TypeOrmModule.forFeature([Pedido, Endereco, Cliente, Produto, ItemPedido, Carrinho, CarrinhoItem]),
   ],
   controllers: [PedidoController],
   providers: [PedidoService],

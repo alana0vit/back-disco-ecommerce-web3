@@ -14,6 +14,7 @@ import {
 } from 'typeorm';
 
 import { ApiProperty } from '@nestjs/swagger';
+import { Carrinho } from 'src/carrinho/entities/carrinho.entity';
 
 export enum Status {
   ABERTO = 'Aberto',
@@ -106,6 +107,14 @@ export class Pedido {
   })
   @JoinColumn()
   pagamento: Pagamento;
+
+  @ApiProperty({
+    type: () => Carrinho,
+    description: 'Carrinho é a origem do pedido',
+  })
+  @OneToOne(() => Carrinho, (carrinho) => carrinho.pedido, { eager: false })
+  @JoinColumn()
+  carrinho: Carrinho;
 
   @ApiProperty({
     type: () => Endereco,

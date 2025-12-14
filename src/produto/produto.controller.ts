@@ -32,14 +32,91 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 
 @ApiTags('Produtos')
-@ApiBearerAuth()
 @Controller('produto')
 export class ProdutoController {
   constructor(private readonly produtoService: ProdutoService) {}
 
+  // ========== ROTAS PÚBLICAS (SEM AUTENTICAÇÃO) ==========
+
+  @Get('public')
+  @ApiOperation({ summary: 'Listar todos os produtos (público)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de produtos retornada com sucesso',
+    type: [Produto],
+  })
+  async findAllPublic(): Promise<Produto[]> {
+    return await this.produtoService.findAll();
+  }
+
+  @Get('public/filtro')
+  @ApiOperation({
+    summary: 'Filtrar produtos por nome, categoria e preço (público)',
+  })
+  @ApiQuery({
+    name: 'nome',
+    required: false,
+    description: 'Filtrar pelo nome do produto',
+  })
+  @ApiQuery({
+    name: 'categoria',
+    required: false,
+    description: 'Filtrar pela categoria do produto',
+  })
+  @ApiQuery({
+    name: 'precoMin',
+    required: false,
+    description: 'Preço mínimo',
+    example: 10,
+  })
+  @ApiQuery({
+    name: 'precoMax',
+    required: false,
+    description: 'Preço máximo',
+    example: 100,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista filtrada de produtos retornada com sucesso',
+    type: [Produto],
+  })
+  async findWithFiltersPublic(
+    @Query('nome') nome?: string,
+    @Query('categoria') categoria?: string,
+    @Query('precoMin') precoMin?: string,
+    @Query('precoMax') precoMax?: string,
+  ): Promise<Produto[]> {
+    const precoMinNum =
+      precoMin && !isNaN(Number(precoMin)) ? Number(precoMin) : undefined;
+    const precoMaxNum =
+      precoMax && !isNaN(Number(precoMax)) ? Number(precoMax) : undefined;
+
+    return await this.produtoService.findWithFilters(
+      nome,
+      categoria,
+      precoMinNum,
+      precoMaxNum,
+    );
+  }
+
+  @Get('public/:id')
+  @ApiOperation({ summary: 'Buscar produto pelo ID (público)' })
+  @ApiParam({ name: 'id', description: 'ID do produto' })
+  @ApiResponse({
+    status: 200,
+    description: 'Produto retornado com sucesso',
+  })
+  @ApiResponse({ status: 404, description: 'Produto não encontrado' })
+  async findOnePublic(@Param('id') id: string) {
+    return await this.produtoService.findOneWithDisponivel(+id);
+  }
+
+  // ========== ROTAS PROTEGIDAS (COM AUTENTICAÇÃO) ==========
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @Post()
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Cadastrar um novo produto (com imagem)' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -69,6 +146,7 @@ export class ProdutoController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE')
   @Get()
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Listar todos os produtos' })
   @ApiResponse({
     status: 200,
@@ -82,6 +160,7 @@ export class ProdutoController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE')
   @Get('filtro')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Filtrar produtos por nome, categoria e preço' })
   @ApiQuery({
     name: 'nome',
@@ -132,6 +211,7 @@ export class ProdutoController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE')
   @Get(':id')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Buscar produto pelo ID (com disponibilidade)' })
   @ApiParam({ name: 'id', description: 'ID do produto' })
   @ApiResponse({
@@ -146,6 +226,7 @@ export class ProdutoController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @Patch(':id')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Atualizar produto pelo ID (com ou sem imagem)' })
   @ApiConsumes('multipart/form-data')
   @ApiParam({ name: 'id', description: 'ID do produto' })
@@ -177,6 +258,7 @@ export class ProdutoController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @Delete(':id')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Deletar um produto pelo ID' })
   @ApiParam({ name: 'id', description: 'ID do produto' })
   @ApiResponse({ status: 200, description: 'Produto removido com sucesso' })

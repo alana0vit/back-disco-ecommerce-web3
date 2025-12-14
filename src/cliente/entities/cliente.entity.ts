@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Endereco } from 'src/endereco/entities/endereco.entity';
 import { Pedido } from 'src/pedido/entities/pedido.entity';
+import { Carrinho } from 'src/carrinho/entities/carrinho.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -16,7 +17,6 @@ export enum Role {
 
 @Entity()
 export class Cliente {
-
   @ApiProperty({
     example: 1,
     description: 'Identificador único do cliente',
@@ -101,4 +101,15 @@ export class Cliente {
     eager: false,
   })
   pedidos: Pedido[];
+
+  // ➕➕➕ ADICIONADO AGORA (sem alterar mais nada)
+  @ApiProperty({
+    type: () => [Carrinho],
+    description: 'Carrinhos associados ao cliente',
+  })
+  @OneToMany(() => Carrinho, (carrinho) => carrinho.cliente, {
+    cascade: true,
+    eager: false,
+  })
+  carrinhos: Carrinho[];
 }

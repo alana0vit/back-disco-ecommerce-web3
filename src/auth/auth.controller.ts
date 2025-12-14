@@ -1,13 +1,8 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, ConflictException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './register.dto';
 import { LoginDto } from './login.dto';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBody,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 
 @ApiTags('Autenticação')
 @Controller()
@@ -15,7 +10,9 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  @ApiOperation({ summary: 'Verifica as credenciais e retorna o token de acesso' })
+  @ApiOperation({
+    summary: 'Verifica as credenciais e retorna o token de acesso',
+  })
   @ApiBody({ type: LoginDto })
   @ApiResponse({
     status: 200,
@@ -26,7 +23,8 @@ export class AuthController {
     description: 'Credenciais inválidas.',
   })
   async login(@Body() dto: LoginDto) {
-    const user = await this.authService.validateUser(dto.nome, dto.senha);
+    // ALTERADO: Passar email em vez de nome
+    const user = await this.authService.validateUser(dto.email, dto.senha);
 
     if (!user) {
       return { message: 'Credenciais inválidas' };
@@ -47,6 +45,13 @@ export class AuthController {
     description: 'Dados inválidos ou usuário já existente.',
   })
   async register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto);
+    try {
+      return await this.authService.register(dto);
+    } catch (error) {
+      if (error.message === 'Email já cadastrado') {
+        throw new ConflictException('Email já cadastrado');
+      }
+      throw error;
+    }
   }
 }

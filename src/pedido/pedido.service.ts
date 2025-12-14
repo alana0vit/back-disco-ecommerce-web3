@@ -12,6 +12,9 @@ import { Cliente } from 'src/cliente/entities/cliente.entity';
 import { Endereco } from 'src/endereco/entities/endereco.entity';
 import { ItemPedido } from 'src/item-pedido/entities/item-pedido.entity';
 import { Produto } from 'src/produto/entities/produto.entity';
+import { Carrinho } from 'src/carrinho/entities/carrinho.entity';
+import { CarrinhoItem } from 'src/carrinho-item/entities/carrinho-item.entity';
+import { Status } from 'src/pedido/entities/pedido.entity';
 
 @Injectable()
 export class PedidoService {
@@ -30,52 +33,69 @@ export class PedidoService {
 
     @InjectRepository(ItemPedido)
     private readonly itemPedidoRepository: Repository<ItemPedido>,
+
+    @InjectRepository(Carrinho)
+    private readonly carrinhoRepository: Repository<Carrinho>,
+
+    @InjectRepository(CarrinhoItem)
+    private readonly carrinhoItemRepository: Repository<CarrinhoItem>,
   ) { }
 
-  async create(createPedidoDto: CreatePedidoDto): Promise<Pedido> {
-    const cliente = await this.clienteRepository.findOne({
-      where: { idCliente: createPedidoDto.id_cliente },
-    });
-    const endereco = await this.enderecoRepository.findOne({
-      where: { idEndereco: createPedidoDto.id_endereco },
-    });
-    if (!cliente || !endereco) {
-      throw new NotFoundException('Cliente ou endereço inválido.');
-    }
-    const itens: ItemPedido[] = [];
-    let valorTotal = 0;
-    let qtdTotal = 0;
-    for (const itemDto of createPedidoDto.item_pedidos) {
-      const produto = await this.produtoRepository.findOne({
-        where: { idProduto: itemDto.id_produto_itpdd },
-      });
-      if (!produto) throw new NotFoundException('Produto não encontrado.');
-      if (produto.estoque < itemDto.quantidade)
-        throw new BadRequestException(
-          `Estoque insuficiente para o produto: ${produto.nome}`,
-        );
-      const valorUnitario = produto.preco;
-      const valorItem = valorUnitario * itemDto.quantidade;
-      valorTotal += valorItem;
-      qtdTotal += itemDto.quantidade;
+  async create(dto: CreatePedidoDto, idCarrinho: number): Promise<Pedido> {
+    const { id_carrinho, id_endereco, descricao, statusPedido } = dto;
 
-      itens.push(
-        this.itemPedidoRepository.create({
-          produto,
-          quantidade: itemDto.quantidade,
-          valorUnitario,
-          valorTotal: valorItem,
-        }),
-      );
+    const carrinho = await this.carrinhoRepository.findOne({
+      where: { idCarrinho },
+      relations: ['cliente', 'itens', 'itens.produto'],
+    });
+
+    if (!carrinho) throw new NotFoundException('Carrinho não encontrado.');
+
+    if (carrinho.itens.length === 0)
+      throw new BadRequestException('Carrinho vazio.');
+
+    const endereco = await this.enderecoRepository.findOne({
+      where: { idEndereco: id_endereco },
+    });
+
+    if (!endereco)
+      throw new NotFoundException('Endereço não encontrado.');
+
+    for (const item of carrinho.itens) {
+      if (!item.produto.ativo)
+        throw new BadRequestException(
+          `Produto ${item.produto.nome} está inativo e não pode ser comprado.`,
+        );
+
+      if (item.produto.estoque < item.quantidade)
+        throw new BadRequestException(
+          `Estoque insuficiente para o produto ${item.produto.nome}`,
+        );
     }
+
+    const itensPedido = carrinho.itens.map((item) =>
+      this.itemPedidoRepository.create({
+        produto: item.produto,
+        quantidade: item.quantidade,
+        valorUnitario: item.produto.preco,
+        valorTotal: item.quantidade * item.produto.preco,
+      }),
+    );
+
+    const valorTotal = itensPedido.reduce((total, item) => total + Number(item.valorTotal), 0,);
+    const qtdTotal = itensPedido.reduce((total, item) => total + item.quantidade, 0,);
+
     const pedido = this.pedidoRepository.create({
-      cliente,
-      endereco,
-      itemPedidos: itens,
+      cliente: carrinho.cliente,
+      itemPedidos: itensPedido,
       valorTotal,
       qtdTotal,
+      statusPedido: Status.AGUARDANDO,
+      carrinho,
     });
+
     return await this.pedidoRepository.save(pedido);
+
   }
 
   async findAllByCliente(idCliente: number): Promise<Pedido[]> {
@@ -86,12 +106,12 @@ export class PedidoService {
   }
 
   async findOne(id: number): Promise<Pedido> {
-    const pedido = await this.pedidoRepository.findOneBy({
-      idPedido: id,
+    const pedido = await this.pedidoRepository.findOne({
+      where: { idPedido: id },
+      relations: ['itemPedidos', 'cliente', 'carrinho', 'endereco'],
     });
-    if (!pedido) {
-      throw new NotFoundException(`Pedido não encontrado!`);
-    }
+
+    if (!pedido) throw new NotFoundException('Pedido não encontrado.');
     return pedido;
   }
 
@@ -103,7 +123,7 @@ export class PedidoService {
     if (!pedido) {
       throw new NotFoundException('Pedido não encontrado!');
     }
-    if (pedido.statusPedido === 'Pago') {
+    if (pedido.statusPedido === Status.PAGO) {
       throw new Error('Não é possível editar um pedido já pago.');
     }
     Object.assign(pedido, updatePedidoDto);
@@ -126,12 +146,11 @@ export class PedidoService {
 
   async remove(id: number): Promise<void> {
     const pedido = await this.findOne(id);
-    if (!pedido) {
-      throw new NotFoundException(`Pedido com ID ${id} não encontrado.`);
-    }
-    if (pedido.pagamento && pedido.pagamento.statusPag === 'Pago') {
-      throw new BadRequestException('Pedido pago não pode ser alterado ou removido.');
-    }
+    if (!pedido) throw new NotFoundException();
+
+    if (pedido.statusPedido === Status.PAGO)
+      throw new BadRequestException('Pedido pago não pode ser removido.');
+
     await this.pedidoRepository.remove(pedido);
   }
 }
