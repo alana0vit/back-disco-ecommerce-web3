@@ -30,6 +30,6 @@ export class LimpezaReservasCronService {
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async handleRelatorioDiario() {
-    this.logger.log('Gerando relatório diário de reservas de estoque...');
+    await this.logger.log('Gerando relatório diário de reservas de estoque...');
   }
 }

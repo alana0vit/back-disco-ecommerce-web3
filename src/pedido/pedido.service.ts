@@ -45,7 +45,7 @@ export class PedidoService {
   ) {}
 
   async create(dto: CreatePedidoDto, idCarrinho: number): Promise<Pedido> {
-    const { id_carrinho, id_endereco, descricao, statusPedido } = dto;
+    const { id_endereco, descricao } = dto;
 
     const carrinho = await this.carrinhoRepository.findOne({
       where: { idCarrinho },

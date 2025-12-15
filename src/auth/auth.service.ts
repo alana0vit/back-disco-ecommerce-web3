@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThan, Repository } from 'typeorm';
@@ -37,7 +33,7 @@ export class AuthService {
 
   async login(user: any) {
     const payload = { email: user.email, sub: user.idCliente, role: user.role };
-    return {
+    return await {
       access_token: this.jwtService.sign(payload),
       user: {
         id: user.idCliente,

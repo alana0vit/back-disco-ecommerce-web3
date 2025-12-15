@@ -9,7 +9,7 @@ import { Produto } from './entities/produto.entity';
 import { CreateProdutoDto } from './dto/create-produto.dto';
 import { UpdateProdutoDto } from './dto/update-produto.dto';
 import { Categoria } from 'src/categoria/entities/categoria.entity';
-import { Pagamento, StatusPag } from 'src/pagamento/entities/pagamento.entity';
+import { Pagamento } from 'src/pagamento/entities/pagamento.entity';
 import { Imagem } from 'src/imagemProduto/entities/imagem.entity';
 
 @Injectable()

@@ -40,7 +40,7 @@ import { CarrinhoItemModule } from './carrinho-item/carrinho-item.module';
           idleTimeoutMillis: 30000,
         },
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true,
+        synchronize: false,
       }),
       inject: [ConfigService],
     }),

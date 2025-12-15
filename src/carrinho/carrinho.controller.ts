@@ -15,7 +15,6 @@ import { UpdateCarrinhoItemDto } from 'src/carrinho-item/dto/update-carrinho-ite
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
-import { Role } from 'src/cliente/entities/cliente.entity';
 
 @ApiTags('Carrinho')
 @ApiBearerAuth()
