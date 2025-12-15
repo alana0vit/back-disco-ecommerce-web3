@@ -12,7 +12,6 @@ import {
 
 @Entity()
 export class Endereco {
-
   @ApiProperty({
     example: 1,
     description: 'Identificador único do endereço',

@@ -9,8 +9,10 @@ import { PedidoModule } from 'src/pedido/pedido.module';
 import { ProdutoModule } from 'src/produto/produto.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Pagamento, Pedido, Produto]),
-    PedidoModule, ProdutoModule
+  imports: [
+    TypeOrmModule.forFeature([Pagamento, Pedido, Produto]),
+    PedidoModule,
+    ProdutoModule,
   ],
   controllers: [PagamentoController],
   providers: [PagamentoService],

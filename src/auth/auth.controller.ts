@@ -1,15 +1,28 @@
-import { Controller, Post, Body, ConflictException, Get, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  ConflictException,
+  Get,
+  Param,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiParam,
+} from '@nestjs/swagger';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @ApiTags('Autenticação')
 @Controller()
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   @Post('login')
   @ApiOperation({
@@ -68,7 +81,9 @@ export class AuthController {
   }
 
   @Post('reset-password')
-  @ApiOperation({ summary: 'Redefine a senha usando o token recebido por email' })
+  @ApiOperation({
+    summary: 'Redefine a senha usando o token recebido por email',
+  })
   @ApiBody({ type: ResetPasswordDto })
   @ApiResponse({
     status: 200,
@@ -92,8 +107,8 @@ export class AuthController {
     status: 200,
     description: 'Token é válido ou inválido',
     schema: {
-      example: { valid: true, email: 'usuario@email.com' }
-    }
+      example: { valid: true, email: 'usuario@email.com' },
+    },
   })
   async validateResetToken(@Param('token') token: string) {
     return await this.authService.validateResetToken(token);

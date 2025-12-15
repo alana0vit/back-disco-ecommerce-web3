@@ -10,7 +10,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Cliente } from 'src/cliente/entities/cliente.entity';
 import type { StringValue } from 'ms';
 
-
 @Module({
   imports: [
     TypeOrmModule.forFeature([Cliente]),
@@ -20,7 +19,9 @@ import type { StringValue } from 'ms';
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET') || '',
-        signOptions: { expiresIn: configService.get<StringValue>('JWT_EXPIRES_IN') },
+        signOptions: {
+          expiresIn: configService.get<StringValue>('JWT_EXPIRES_IN'),
+        },
       }),
     }),
     ConfigModule,

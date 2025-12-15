@@ -15,7 +15,7 @@ export class ReservaEstoqueService {
     private produtoRepository: Repository<Produto>,
     @InjectRepository(Pedido)
     private pedidoRepository: Repository<Pedido>,
-  ) { }
+  ) {}
 
   async reservarEstoque(pedido: Pedido): Promise<void> {
     try {
@@ -26,24 +26,24 @@ export class ReservaEstoqueService {
           .createQueryBuilder()
           .update(Produto)
           .set({
-            estoqueReservado: () => `estoqueReservado + ${quantidade}`
+            estoqueReservado: () => `estoqueReservado + ${quantidade}`,
           })
           .where('idProduto = :id', { id: produto.idProduto })
           .andWhere('estoque - estoqueReservado >= :quantidade', {
-            quantidade
+            quantidade,
           })
           .execute();
 
         if (resultado.affected === 0) {
           throw new Error(
             `Estoque insuficiente para o produto ${produto.nome}. ` +
-            `Disponível: ${produto.estoque - produto.estoqueReservado}, ` +
-            `Solicitado: ${quantidade}`
+              `Disponível: ${produto.estoque - produto.estoqueReservado}, ` +
+              `Solicitado: ${quantidade}`,
           );
         }
 
         this.logger.log(
-          `Reservado ${quantidade} unidades do produto ${produto.nome} (ID: ${produto.idProduto})`
+          `Reservado ${quantidade} unidades do produto ${produto.nome} (ID: ${produto.idProduto})`,
         );
       }
     } catch (error) {
@@ -70,17 +70,18 @@ export class ReservaEstoqueService {
           .createQueryBuilder()
           .update(Produto)
           .set({
-            estoqueReservado: () => `GREATEST(estoqueReservado - ${quantidade}, 0)`
+            estoqueReservado: () =>
+              `GREATEST(estoqueReservado - ${quantidade}, 0)`,
           })
           .where('idProduto = :id', { id: produto.idProduto })
           .andWhere('estoqueReservado >= :quantidade', {
-            quantidade
+            quantidade,
           })
           .execute();
 
         if (resultado.affected === 0) {
           this.logger.warn(
-            `Tentativa de liberar mais estoque do que reservado para produto ${produto.idProduto}`
+            `Tentativa de liberar mais estoque do que reservado para produto ${produto.idProduto}`,
           );
 
           await this.produtoRepository
@@ -93,7 +94,7 @@ export class ReservaEstoqueService {
         }
 
         this.logger.log(
-          `Liberado ${quantidade} unidades do produto ${produto.nome} (ID: ${produto.idProduto})`
+          `Liberado ${quantidade} unidades do produto ${produto.nome} (ID: ${produto.idProduto})`,
         );
       }
     } catch (error) {
@@ -119,23 +120,24 @@ export class ReservaEstoqueService {
           .update(Produto)
           .set({
             estoque: () => `estoque - ${quantidade}`,
-            estoqueReservado: () => `GREATEST(estoqueReservado - ${quantidade}, 0)`
+            estoqueReservado: () =>
+              `GREATEST(estoqueReservado - ${quantidade}, 0)`,
           })
           .where('idProduto = :id', { id: produto.idProduto })
           .andWhere('estoqueReservado >= :quantidade', {
-            quantidade
+            quantidade,
           })
           .execute();
 
         if (resultado.affected === 0) {
           throw new Error(
             `Erro ao confirmar estoque para produto ${produto.nome}. ` +
-            `Verifique o estoque reservado.`
+              `Verifique o estoque reservado.`,
           );
         }
 
         this.logger.log(
-          `Confirmado ${quantidade} unidades do produto ${produto.nome} (ID: ${produto.idProduto})`
+          `Confirmado ${quantidade} unidades do produto ${produto.nome} (ID: ${produto.idProduto})`,
         );
       }
     } catch (error) {
@@ -148,7 +150,7 @@ export class ReservaEstoqueService {
     for (const item of pedido.itemPedidos) {
       const produto = await this.produtoRepository.findOne({
         where: { idProduto: item.produto.idProduto },
-        select: ['estoque', 'estoqueReservado']
+        select: ['estoque', 'estoqueReservado'],
       });
 
       if (!produto) return false;
@@ -169,7 +171,7 @@ export class ReservaEstoqueService {
         .leftJoinAndSelect('pedido.itemPedidos', 'itemPedidos')
         .leftJoinAndSelect('itemPedidos.produto', 'produto')
         .where('pedido.statusPedido IN (:...status)', {
-          status: ['Aberto', 'Aguardando pagamento']
+          status: ['Aberto', 'Aguardando pagamento'],
         })
         .andWhere('pedido.dataPedido < :limite', { limite: trintaMinutosAtras })
         .getMany();
@@ -185,7 +187,8 @@ export class ReservaEstoqueService {
               .createQueryBuilder()
               .update(Produto)
               .set({
-                estoqueReservado: () => `GREATEST(estoqueReservado - ${quantidade}, 0)`
+                estoqueReservado: () =>
+                  `GREATEST(estoqueReservado - ${quantidade}, 0)`,
               })
               .where('idProduto = :id', { id: produto.idProduto })
               .execute();
@@ -197,7 +200,9 @@ export class ReservaEstoqueService {
           totalLiberado += pedido.itemPedidos.length;
           this.logger.log(`Pedido ${pedido.idPedido} expirado e cancelado`);
         } catch (error) {
-          this.logger.error(`Erro ao processar pedido expirado ${pedido.idPedido}: ${error.message}`);
+          this.logger.error(
+            `Erro ao processar pedido expirado ${pedido.idPedido}: ${error.message}`,
+          );
         }
       }
 

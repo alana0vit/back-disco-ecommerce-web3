@@ -54,7 +54,7 @@ import { CarrinhoItemModule } from './carrinho-item/carrinho-item.module';
     ItemPedidoModule,
     AuthModule,
     CarrinhoModule,
-    CarrinhoItemModule
+    CarrinhoItemModule,
   ],
   controllers: [AppController],
   providers: [AppService],

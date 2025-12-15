@@ -32,7 +32,7 @@ export class CreateProdutoDto {
 
   @ApiProperty({
     description: 'Preço unitário do produto',
-    example: 59.90,
+    example: 59.9,
     minimum: 0,
   })
   @Type(() => Number)

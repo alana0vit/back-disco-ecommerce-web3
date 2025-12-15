@@ -28,7 +28,7 @@ import {
 @ApiTags('Categorias')
 @Controller('categoria')
 export class CategoriaController {
-  constructor(private readonly categoriaService: CategoriaService) { }
+  constructor(private readonly categoriaService: CategoriaService) {}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
@@ -91,7 +91,9 @@ export class CategoriaController {
   async findOne(@Param('id') id: string): Promise<Categoria> {
     const idNumber = Number(id);
     if (isNaN(idNumber) || idNumber <= 0) {
-      throw new BadRequestException('ID da categoria deve ser um número válido e positivo');
+      throw new BadRequestException(
+        'ID da categoria deve ser um número válido e positivo',
+      );
     }
     return await this.categoriaService.findOne(+id);
   }

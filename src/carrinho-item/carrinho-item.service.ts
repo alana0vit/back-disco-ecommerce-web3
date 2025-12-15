@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CarrinhoItem } from './entities/carrinho-item.entity';
@@ -20,7 +24,10 @@ export class CarrinhoItemService {
     private readonly produtoRepo: Repository<Produto>,
   ) {}
 
-  async create(idCarrinho: number, dto: CreateCarrinhoItemDto): Promise<CarrinhoItem> {
+  async create(
+    idCarrinho: number,
+    dto: CreateCarrinhoItemDto,
+  ): Promise<CarrinhoItem> {
     const carrinho = await this.carrinhoRepo.findOne({
       where: { idCarrinho },
       relations: ['itens'],
@@ -33,16 +40,22 @@ export class CarrinhoItemService {
     if (!produto) throw new NotFoundException('Produto não encontrado');
 
     if (produto.estoque < dto.quantidade) {
-      throw new BadRequestException('Estoque insuficiente para adicionar esse item');
+      throw new BadRequestException(
+        'Estoque insuficiente para adicionar esse item',
+      );
     }
 
     // Se já existir item no carrinho para o mesmo produto, incrementar quantidade
-    const existente = carrinho.itens.find((i) => i.produto.idProduto === produto.idProduto);
+    const existente = carrinho.itens.find(
+      (i) => i.produto.idProduto === produto.idProduto,
+    );
 
     if (existente) {
       const novaQtd = existente.quantidade + dto.quantidade;
       if (novaQtd > produto.estoque) {
-        throw new BadRequestException('Estoque insuficiente para essa quantidade');
+        throw new BadRequestException(
+          'Estoque insuficiente para essa quantidade',
+        );
       }
       existente.quantidade = novaQtd;
       existente.subtotal = Number(produto.preco) * existente.quantidade;
@@ -68,20 +81,32 @@ export class CarrinhoItemService {
   }
 
   async findOne(idItem: number): Promise<CarrinhoItem> {
-    const item = await this.itemRepo.findOne({ where: { idItem }, relations: ['produto', 'carrinho'] });
+    const item = await this.itemRepo.findOne({
+      where: { idItem },
+      relations: ['produto', 'carrinho'],
+    });
     if (!item) throw new NotFoundException('Item do carrinho não encontrado');
     return item;
   }
 
-  async update(idItem: number, dto: UpdateCarrinhoItemDto): Promise<CarrinhoItem> {
-    const item = await this.itemRepo.findOne({ where: { idItem }, relations: ['produto', 'carrinho'] });
+  async update(
+    idItem: number,
+    dto: UpdateCarrinhoItemDto,
+  ): Promise<CarrinhoItem> {
+    const item = await this.itemRepo.findOne({
+      where: { idItem },
+      relations: ['produto', 'carrinho'],
+    });
     if (!item) throw new NotFoundException('Item do carrinho não encontrado');
 
     if (dto.quantidade !== undefined) {
-      if (dto.quantidade <= 0) throw new BadRequestException('Quantidade deve ser >= 1');
+      if (dto.quantidade <= 0)
+        throw new BadRequestException('Quantidade deve ser >= 1');
 
       if (item.produto.estoque < dto.quantidade) {
-        throw new BadRequestException('Estoque insuficiente para essa quantidade');
+        throw new BadRequestException(
+          'Estoque insuficiente para essa quantidade',
+        );
       }
 
       item.quantidade = dto.quantidade;
@@ -94,7 +119,10 @@ export class CarrinhoItemService {
   }
 
   async remove(idItem: number): Promise<{ message: string }> {
-    const item = await this.itemRepo.findOne({ where: { idItem }, relations: ['carrinho'] });
+    const item = await this.itemRepo.findOne({
+      where: { idItem },
+      relations: ['carrinho'],
+    });
     if (!item) throw new NotFoundException('Item do carrinho não encontrado');
 
     const idCarrinho = item.carrinho.idCarrinho;
@@ -106,9 +134,15 @@ export class CarrinhoItemService {
 
   // Helper: recalcula total do carrinho
   private async recalcCarrinhoTotal(idCarrinho: number) {
-    const carrinho = await this.carrinhoRepo.findOne({ where: { idCarrinho }, relations: ['itens'] });
+    const carrinho = await this.carrinhoRepo.findOne({
+      where: { idCarrinho },
+      relations: ['itens'],
+    });
     if (!carrinho) throw new NotFoundException('Carrinho não encontrado');
-    const total = carrinho.itens.reduce((acc, it) => acc + Number(it.subtotal), 0);
+    const total = carrinho.itens.reduce(
+      (acc, it) => acc + Number(it.subtotal),
+      0,
+    );
     carrinho.total = total;
     await this.carrinhoRepo.save(carrinho);
     return carrinho;

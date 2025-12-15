@@ -9,7 +9,10 @@ import { Repository } from 'typeorm';
 import { Pagamento, StatusPag, Metodo } from './entities/pagamento.entity';
 import { CreatePagamentoDto } from './dto/create-pagamento.dto';
 import { UpdatePagamentoDto } from './dto/update-pagamento.dto';
-import { Pedido, Status as StatusPedido } from 'src/pedido/entities/pedido.entity';
+import {
+  Pedido,
+  Status as StatusPedido,
+} from 'src/pedido/entities/pedido.entity';
 import { Produto } from 'src/produto/entities/produto.entity';
 import { ReservaEstoqueService } from 'src/produto/reserva-estoque.service';
 import { PedidoService } from 'src/pedido/pedido.service';
@@ -48,22 +51,26 @@ export class PagamentoService {
       );
     }
 
-    if (pedido.pagamento && pedido.pagamento.statusPag !== StatusPag.CANCELADO) {
+    if (
+      pedido.pagamento &&
+      pedido.pagamento.statusPag !== StatusPag.CANCELADO
+    ) {
       throw new ConflictException('Este pedido já possui um pagamento ativo.');
     }
-    const disponivel = await this.reservaEstoqueService.verificarDisponibilidade(pedido);
-    
+    const disponivel =
+      await this.reservaEstoqueService.verificarDisponibilidade(pedido);
+
     if (!disponivel) {
       throw new BadRequestException(
-        'Estoque insuficiente para um ou mais produtos do pedido.'
+        'Estoque insuficiente para um ou mais produtos do pedido.',
       );
     }
     const valorPedido = pedido.valorTotal;
     const tolerancia = 0.01;
-    
+
     if (Math.abs(valor - valorPedido) > tolerancia) {
       throw new BadRequestException(
-        `Valor do pagamento (${valor}) não corresponde ao valor do pedido (${valorPedido}).`
+        `Valor do pagamento (${valor}) não corresponde ao valor do pedido (${valorPedido}).`,
       );
     }
 
@@ -80,9 +87,9 @@ export class PagamentoService {
   private async getQuantidadeReservada(idProduto: number): Promise<number> {
     const produto = await this.produtoRepository.findOne({
       where: { idProduto },
-      select: ['estoqueReservado']
+      select: ['estoqueReservado'],
     });
-    
+
     return produto?.estoqueReservado || 0;
   }
 
@@ -97,7 +104,9 @@ export class PagamentoService {
     }
 
     if (dto.metodoPag && dto.metodoPag !== pagamento.metodoPag) {
-      throw new BadRequestException('Não é permitido alterar o método de pagamento.');
+      throw new BadRequestException(
+        'Não é permitido alterar o método de pagamento.',
+      );
     }
 
     const pedido = pagamento.pedido;
@@ -107,10 +116,10 @@ export class PagamentoService {
         return await this.pagamentoRepository.save(pagamento);
       }
       await this.pedidoService.confirmarPagamento(pedido.idPedido);
-      
+
       pagamento.statusPag = StatusPag.PAGO;
       Object.assign(pagamento, dto);
-      
+
       return await this.pagamentoRepository.save(pagamento);
     }
     if (dto.statusPag === StatusPag.CANCELADO) {
@@ -122,7 +131,7 @@ export class PagamentoService {
       await this.pedidoService.cancelarPedido(pedido.idPedido);
       pagamento.statusPag = StatusPag.CANCELADO;
       Object.assign(pagamento, dto);
-      
+
       return await this.pagamentoRepository.save(pagamento);
     }
     Object.assign(pagamento, dto);
@@ -173,6 +182,8 @@ export class PagamentoService {
       throw new NotFoundException('Pagamento não encontrado');
     }
 
-    return await this.reservaEstoqueService.verificarDisponibilidade(pagamento.pedido);
+    return await this.reservaEstoqueService.verificarDisponibilidade(
+      pagamento.pedido,
+    );
   }
 }

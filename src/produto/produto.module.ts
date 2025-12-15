@@ -12,13 +12,16 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { LimpezaReservasCronService } from './limpeza-reservas-cron.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Produto, Categoria, Pagamento, Imagem, Pedido]),
-  ScheduleModule.forRoot()],
+  imports: [
+    TypeOrmModule.forFeature([Produto, Categoria, Pagamento, Imagem, Pedido]),
+    ScheduleModule.forRoot(),
+  ],
   controllers: [ProdutoController],
-  providers: [ProdutoService, ReservaEstoqueService, LimpezaReservasCronService,],
-  exports: [
+  providers: [
+    ProdutoService,
     ReservaEstoqueService,
     LimpezaReservasCronService,
   ],
+  exports: [ReservaEstoqueService, LimpezaReservasCronService],
 })
-export class ProdutoModule { }
+export class ProdutoModule {}

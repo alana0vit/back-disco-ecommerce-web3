@@ -37,7 +37,7 @@ export class Produto {
   descricao?: string;
 
   @ApiProperty({
-    example: 99.90,
+    example: 99.9,
     description: 'Preço do produto',
   })
   @Column('decimal', { precision: 10, scale: 2, nullable: false })
@@ -54,7 +54,7 @@ export class Produto {
     example: 30,
     description: 'Quantidade em estoque disponivel',
   })
-  @Column({type: 'int', default: 0} )
+  @Column({ type: 'int', default: 0 })
   estoqueReservado: number;
 
   @ApiProperty({

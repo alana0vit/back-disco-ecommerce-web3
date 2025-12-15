@@ -24,14 +24,14 @@ export class ItemPedido {
   quantidade: number;
 
   @ApiProperty({
-    example: 49.90,
+    example: 49.9,
     description: 'Valor unitário do produto no momento da compra',
   })
   @Column('decimal', { precision: 10, scale: 2, nullable: false })
   valorUnitario: number;
 
   @ApiProperty({
-    example: 99.80,
+    example: 99.8,
     description: 'Valor total (quantidade x valor unitário)',
   })
   @Column('decimal', { precision: 10, scale: 2, nullable: false })
@@ -67,5 +67,4 @@ export class ItemPedido {
   })
   @ManyToOne(() => CarrinhoItem, (ci) => ci.itemPedidos, { eager: false })
   carrinhoItem: CarrinhoItem;
-
 }

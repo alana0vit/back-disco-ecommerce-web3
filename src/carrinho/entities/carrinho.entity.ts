@@ -43,5 +43,4 @@ export class Carrinho {
   @ApiProperty({ type: () => Pedido })
   @OneToOne(() => Pedido, (pedido) => pedido.carrinho)
   pedido: Pedido;
-
 }

@@ -12,7 +12,14 @@ import {
 import { CarrinhoItemService } from './carrinho-item.service';
 import { CreateCarrinhoItemDto } from './dto/create-carrinho-item.dto';
 import { UpdateCarrinhoItemDto } from './dto/update-carrinho-item.dto';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBody,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
@@ -21,7 +28,7 @@ import { Roles } from 'src/auth/roles.decorator';
 @ApiBearerAuth()
 @Controller('carrinho-item')
 export class CarrinhoItemController {
-  constructor(private readonly service: CarrinhoItemService) { }
+  constructor(private readonly service: CarrinhoItemService) {}
 
   @Post(':idCarrinho')
   @UseGuards(JwtAuthGuard, RolesGuard)

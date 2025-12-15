@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThan, Repository } from 'typeorm';
@@ -17,7 +21,7 @@ export class AuthService {
     private readonly clienteRepository: Repository<Cliente>,
     private readonly jwtService: JwtService,
     private readonly emailService: EmailService,
-  ) { }
+  ) {}
 
   async validateUser(email: string, senhaRecebida: string): Promise<any> {
     const user = await this.clienteRepository.findOne({ where: { email } });
@@ -72,11 +76,16 @@ export class AuthService {
     return userWithoutPassword;
   }
 
-  async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<{ message: string }> {
+  async forgotPassword(
+    forgotPasswordDto: ForgotPasswordDto,
+  ): Promise<{ message: string }> {
     const { email } = forgotPasswordDto;
     const user = await this.clienteRepository.findOne({ where: { email } });
     if (!user) {
-      return { message: 'Se o email existir em nossa base, enviaremos instruções para recuperação' };
+      return {
+        message:
+          'Se o email existir em nossa base, enviaremos instruções para recuperação',
+      };
     }
     const resetToken = crypto.randomBytes(32).toString('hex');
     const resetTokenHash = crypto
@@ -91,19 +100,19 @@ export class AuthService {
     await this.emailService.sendPasswordResetEmail(
       user.email,
       user.nome,
-      resetUrl
+      resetUrl,
     );
     return {
-      message: 'Se o email existir em nossa base, enviaremos instruções para recuperação'
+      message:
+        'Se o email existir em nossa base, enviaremos instruções para recuperação',
     };
   }
 
-  async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<{ message: string }> {
+  async resetPassword(
+    resetPasswordDto: ResetPasswordDto,
+  ): Promise<{ message: string }> {
     const { token, novaSenha } = resetPasswordDto;
-    const hashedToken = crypto
-      .createHash('sha256')
-      .update(token)
-      .digest('hex');
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
     const user = await this.clienteRepository.findOne({
       where: {
         resetPasswordToken: hashedToken,
@@ -116,7 +125,9 @@ export class AuthService {
     }
     const isSamePassword = await bcrypt.compare(novaSenha, user.senha);
     if (isSamePassword) {
-      throw new BadRequestException('A nova senha não pode ser igual à senha atual');
+      throw new BadRequestException(
+        'A nova senha não pode ser igual à senha atual',
+      );
     }
     user.senha = await bcrypt.hash(novaSenha, 10);
     user.resetPasswordToken = null;
@@ -124,16 +135,15 @@ export class AuthService {
     await this.clienteRepository.save(user);
     await this.emailService.sendPasswordChangedConfirmation(
       user.email,
-      user.nome
+      user.nome,
     );
     return { message: 'Senha alterada com sucesso' };
   }
 
-  async validateResetToken(token: string): Promise<{ valid: boolean; email?: string }> {
-    const hashedToken = crypto
-      .createHash('sha256')
-      .update(token)
-      .digest('hex');
+  async validateResetToken(
+    token: string,
+  ): Promise<{ valid: boolean; email?: string }> {
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
     const user = await this.clienteRepository.findOne({
       where: {
         resetPasswordToken: hashedToken,

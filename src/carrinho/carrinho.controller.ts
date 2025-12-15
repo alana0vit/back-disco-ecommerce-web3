@@ -1,4 +1,13 @@
-import { Controller, Post, Delete, Patch, Param, Body, Get, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Delete,
+  Patch,
+  Param,
+  Body,
+  Get,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CarrinhoService } from './carrinho.service';
 import { CreateCarrinhoItemDto } from 'src/carrinho-item/dto/create-carrinho-item.dto';
@@ -13,7 +22,7 @@ import { Role } from 'src/cliente/entities/cliente.entity';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('carrinho')
 export class CarrinhoController {
-  constructor(private readonly carrinhoService: CarrinhoService) { }
+  constructor(private readonly carrinhoService: CarrinhoService) {}
 
   @Get(':idCliente')
   @UseGuards(JwtAuthGuard, RolesGuard)

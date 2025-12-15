@@ -6,7 +6,7 @@ import {
   Patch,
   Param,
   Delete,
-  UseGuards ,
+  UseGuards,
 } from '@nestjs/common';
 import { Pagamento } from './entities/pagamento.entity';
 import { PagamentoService } from './pagamento.service';
@@ -15,7 +15,13 @@ import { UpdatePagamentoDto } from './dto/update-pagamento.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Pagamentos')
 @ApiBearerAuth()
@@ -38,7 +44,10 @@ export class PagamentoController {
   @Roles('CLIENTE', 'ADMIN')
   @Get()
   @ApiOperation({ summary: 'Lista todos os pagamentos' })
-  @ApiResponse({ status: 200, description: 'Lista de pagamentos retornada com sucesso.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de pagamentos retornada com sucesso.',
+  })
   async findAll(): Promise<Pagamento[]> {
     return await this.pagamentoService.findAll();
   }
@@ -48,7 +57,10 @@ export class PagamentoController {
   @Get(':id')
   @ApiOperation({ summary: 'Busca um pagamento pelo ID' })
   @ApiParam({ name: 'id', description: 'ID do pagamento' })
-  @ApiResponse({ status: 200, description: 'Pagamento encontrado com sucesso.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Pagamento encontrado com sucesso.',
+  })
   @ApiResponse({ status: 404, description: 'Pagamento não encontrado.' })
   async findOne(@Param('id') id: string): Promise<Pagamento> {
     return await this.pagamentoService.findOne(+id);
@@ -59,7 +71,10 @@ export class PagamentoController {
   @Patch(':id')
   @ApiOperation({ summary: 'Atualiza um pagamento pelo ID' })
   @ApiParam({ name: 'id', description: 'ID do pagamento' })
-  @ApiResponse({ status: 200, description: 'Pagamento atualizado com sucesso.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Pagamento atualizado com sucesso.',
+  })
   async update(
     @Param('id') id: string,
     @Body() updatePagamentoDto: UpdatePagamentoDto,

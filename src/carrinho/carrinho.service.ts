@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Carrinho } from './entities/carrinho.entity';
@@ -56,7 +60,9 @@ export class CarrinhoService {
     if (produto.estoque < dto.quantidade)
       throw new BadRequestException('Estoque insuficiente');
 
-    let item = carrinho.itens.find((i) => i.produto.idProduto === produto.idProduto);
+    let item = carrinho.itens.find(
+      (i) => i.produto.idProduto === produto.idProduto,
+    );
 
     if (item) {
       item.quantidade += dto.quantidade;
@@ -79,7 +85,11 @@ export class CarrinhoService {
     return this.updateCarrinhoTotal(carrinho.idCarrinho);
   }
 
-  async updateQuantidade(idCliente: number, idItem: number, dto: UpdateCarrinhoItemDto) {
+  async updateQuantidade(
+    idCliente: number,
+    idItem: number,
+    dto: UpdateCarrinhoItemDto,
+  ) {
     const carrinho = await this.getOrCreateCarrinho(idCliente);
 
     const item = await this.itemRepo.findOne({
@@ -125,7 +135,10 @@ export class CarrinhoService {
 
     if (!carrinho) throw new NotFoundException('Carrinho não encontrado');
 
-    const total = carrinho.itens.reduce((acc, item) => acc + Number(item.subtotal), 0);
+    const total = carrinho.itens.reduce(
+      (acc, item) => acc + Number(item.subtotal),
+      0,
+    );
     carrinho.total = total;
 
     return this.carrinhoRepo.save(carrinho);

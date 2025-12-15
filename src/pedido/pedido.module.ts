@@ -13,13 +13,19 @@ import { ProdutoModule } from 'src/produto/produto.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Pedido, Endereco, Cliente, Produto, ItemPedido, Carrinho, CarrinhoItem]),
+    TypeOrmModule.forFeature([
+      Pedido,
+      Endereco,
+      Cliente,
+      Produto,
+      ItemPedido,
+      Carrinho,
+      CarrinhoItem,
+    ]),
     ProdutoModule,
   ],
   controllers: [PedidoController],
   providers: [PedidoService],
-  exports: [
-    PedidoService
-  ],
+  exports: [PedidoService],
 })
 export class PedidoModule {}

@@ -7,7 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
-  ParseIntPipe
+  ParseIntPipe,
 } from '@nestjs/common';
 import { Pedido } from './entities/pedido.entity';
 import { PedidoService } from './pedido.service';
@@ -21,14 +21,14 @@ import {
   ApiOperation,
   ApiParam,
   ApiResponse,
-  ApiTags
+  ApiTags,
 } from '@nestjs/swagger';
 
 @ApiTags('Pedidos')
 @ApiBearerAuth()
 @Controller('pedido')
 export class PedidoController {
-  constructor(private readonly pedidoService: PedidoService) { }
+  constructor(private readonly pedidoService: PedidoService) {}
 
   @Post('/:idCarrinho')
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -37,7 +37,7 @@ export class PedidoController {
   @ApiResponse({ status: 201, description: 'Pedido criado com sucesso.' })
   async create(
     @Body() createPedidoDto: CreatePedidoDto,
-    @Param('idCarrinho', ParseIntPipe) idCarrinho: number
+    @Param('idCarrinho', ParseIntPipe) idCarrinho: number,
   ) {
     return this.pedidoService.create(createPedidoDto, idCarrinho);
   }
@@ -47,7 +47,10 @@ export class PedidoController {
   @Get('lista/:id')
   @ApiOperation({ summary: 'Lista todos os pedidos de um cliente específico' })
   @ApiParam({ name: 'id', description: 'ID do cliente' })
-  @ApiResponse({ status: 200, description: 'Pedidos do cliente retornados com sucesso.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Pedidos do cliente retornados com sucesso.',
+  })
   async findAllByCliente(@Param('id') id: number): Promise<Pedido[]> {
     return this.pedidoService.findAllByCliente(id);
   }

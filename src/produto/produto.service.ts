@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Produto } from './entities/produto.entity';
@@ -22,7 +26,7 @@ export class ProdutoService {
 
     @InjectRepository(Imagem)
     private readonly imagemRepository: Repository<Imagem>,
-  ) { }
+  ) {}
 
   private getImageUrl(filename?: string): string | undefined {
     if (!filename) return undefined;
@@ -30,8 +34,10 @@ export class ProdutoService {
     return `${baseUrl}${filename}`;
   }
 
-  async create(createProdutoDto: CreateProdutoDto,
-    file?: Express.Multer.File,): Promise<Produto> {
+  async create(
+    createProdutoDto: CreateProdutoDto,
+    file?: Express.Multer.File,
+  ): Promise<Produto> {
     const categoria = await this.categoriaRepository.findOne({
       where: { idCategoria: createProdutoDto.id_categoria_prod },
     });
@@ -82,10 +88,12 @@ export class ProdutoService {
       relations: ['categoria', 'imagem'],
     });
     if (!produto) throw new NotFoundException('Produto não encontrado');
-    
+
     return {
       ...produto,
-      imagemUrl: produto.imagem ? this.getImageUrl(produto.imagem.caminho) : null,
+      imagemUrl: produto.imagem
+        ? this.getImageUrl(produto.imagem.caminho)
+        : null,
       estoqueDisponivel: produto.estoqueDisponivel,
       estoqueReservado: produto.estoqueReservado,
       estoqueTotal: produto.estoque,
@@ -95,7 +103,7 @@ export class ProdutoService {
   private async getQuantidadeReservada(idProduto: number): Promise<number> {
     const produto = await this.produtoRepository.findOne({
       where: { idProduto },
-      select: ['estoqueReservado']
+      select: ['estoqueReservado'],
     });
     return produto?.estoqueReservado || 0;
   }
@@ -111,11 +119,15 @@ export class ProdutoService {
       .leftJoinAndSelect('produto.categoria', 'categoria')
       .where('produto.ativo = :ativo', { ativo: true });
     if (nome) {
-      query.andWhere('LOWER(produto.nome) LIKE LOWER(:nome)', { nome: `%${nome}%` });
+      query.andWhere('LOWER(produto.nome) LIKE LOWER(:nome)', {
+        nome: `%${nome}%`,
+      });
     }
     if (categoria) {
       if (!isNaN(Number(categoria))) {
-        query.andWhere('categoria.idCategoria = :idCategoria', { idCategoria: Number(categoria) });
+        query.andWhere('categoria.idCategoria = :idCategoria', {
+          idCategoria: Number(categoria),
+        });
       } else {
         query.andWhere('LOWER(categoria.nome) LIKE LOWER(:categoriaNome)', {
           categoriaNome: `%${categoria}%`,
@@ -130,18 +142,24 @@ export class ProdutoService {
     }
     const produtos = await query.getMany();
     if (produtos.length === 0) {
-      throw new NotFoundException('Nenhum produto encontrado com os filtros informados!');
+      throw new NotFoundException(
+        'Nenhum produto encontrado com os filtros informados!',
+      );
     }
     return produtos;
   }
 
-  async update(id: number, updateProdutoDto: UpdateProdutoDto, file?: Express.Multer.File,): Promise<Produto> {
+  async update(
+    id: number,
+    updateProdutoDto: UpdateProdutoDto,
+    file?: Express.Multer.File,
+  ): Promise<Produto> {
     const produto = await this.produtoRepository.findOne({
       where: { idProduto: id },
       relations: ['categoria', 'imagem'],
     });
     if (!produto) throw new NotFoundException('Produto não encontrado');
-    
+
     if (updateProdutoDto.id_categoria_prod) {
       const categoria = await this.categoriaRepository.findOne({
         where: { idCategoria: updateProdutoDto.id_categoria_prod },
@@ -151,7 +169,7 @@ export class ProdutoService {
       }
       produto.categoria = categoria;
     }
-    
+
     if (file) {
       const caminho = `/uploads/${file.filename}`;
       if (produto.imagem) {
@@ -175,7 +193,7 @@ export class ProdutoService {
         produto.imagem = null;
       }
     }
-    
+
     Object.assign(produto, updateProdutoDto);
     return await this.produtoRepository.save(produto);
   }
@@ -185,14 +203,17 @@ export class ProdutoService {
     await this.produtoRepository.remove(produto);
   }
 
-  async verificarEstoqueDisponivel(idProduto: number, quantidade: number): Promise<boolean> {
+  async verificarEstoqueDisponivel(
+    idProduto: number,
+    quantidade: number,
+  ): Promise<boolean> {
     const produto = await this.produtoRepository.findOne({
       where: { idProduto },
-      select: ['estoque', 'estoqueReservado']
+      select: ['estoque', 'estoqueReservado'],
     });
-    
+
     if (!produto) return false;
-    
+
     const estoqueDisponivel = produto.estoque - produto.estoqueReservado;
     return estoqueDisponivel >= quantidade;
   }

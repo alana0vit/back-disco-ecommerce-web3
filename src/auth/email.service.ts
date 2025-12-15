@@ -3,50 +3,54 @@ import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class EmailService {
-    private readonly logger = new Logger(EmailService.name);
-    private transporter: nodemailer.Transporter;
+  private readonly logger = new Logger(EmailService.name);
+  private transporter: nodemailer.Transporter;
 
-    constructor() {
-        const emailHost = process.env.EMAIL_HOST || 'smtp.gmail.com';
-        const emailPort = parseInt(process.env.EMAIL_PORT || '587');
-        const emailUser = process.env.EMAIL_USER || '';
-        const emailPassword = process.env.EMAIL_PASSWORD || '';
+  constructor() {
+    const emailHost = process.env.EMAIL_HOST || 'smtp.gmail.com';
+    const emailPort = parseInt(process.env.EMAIL_PORT || '587');
+    const emailUser = process.env.EMAIL_USER || '';
+    const emailPassword = process.env.EMAIL_PASSWORD || '';
 
-        this.transporter = nodemailer.createTransport({
-            host: emailHost,
-            port: emailPort,
-            secure: process.env.EMAIL_SECURE === 'true',
-            auth: {
-                user: emailUser,
-                pass: emailPassword,
-            },
-        });
+    this.transporter = nodemailer.createTransport({
+      host: emailHost,
+      port: emailPort,
+      secure: process.env.EMAIL_SECURE === 'true',
+      auth: {
+        user: emailUser,
+        pass: emailPassword,
+      },
+    });
 
-        this.verifyConnection();
+    this.verifyConnection();
+  }
+
+  private async verifyConnection(): Promise<void> {
+    try {
+      await this.transporter.verify();
+      this.logger.log('Conexão com servidor de email estabelecida com sucesso');
+    } catch (error) {
+      this.logger.warn(
+        'Não foi possível conectar ao servidor de email:',
+        error.message,
+      );
     }
+  }
 
-    private async verifyConnection(): Promise<void> {
-        try {
-            await this.transporter.verify();
-            this.logger.log('Conexão com servidor de email estabelecida com sucesso');
-        } catch (error) {
-            this.logger.warn('Não foi possível conectar ao servidor de email:', error.message);
-        }
-    }
+  async sendPasswordResetEmail(
+    to: string,
+    userName: string,
+    resetUrl: string,
+  ): Promise<void> {
+    const emailFrom =
+      process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@discool.com';
+    const emailFromName = process.env.EMAIL_FROM_NAME || 'Discool';
 
-    async sendPasswordResetEmail(
-        to: string,
-        userName: string,
-        resetUrl: string,
-    ): Promise<void> {
-        const emailFrom = process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@discool.com';
-        const emailFromName = process.env.EMAIL_FROM_NAME || 'Discool';
-
-        const mailOptions: nodemailer.SendMailOptions = {
-            from: `"${emailFromName}" <${emailFrom}>`,
-            to,
-            subject: 'Recuperação de Senha',
-            html: `
+    const mailOptions: nodemailer.SendMailOptions = {
+      from: `"${emailFromName}" <${emailFrom}>`,
+      to,
+      subject: 'Recuperação de Senha',
+      html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">Olá, ${userName}!</h2>
           <p>Recebemos uma solicitação para redefinir sua senha.</p>
@@ -71,29 +75,30 @@ export class EmailService {
           </p>
         </div>
       `,
-            text: `Olá ${userName}!\n\nRecebemos uma solicitação para redefinir sua senha.\nAcesse este link para criar uma nova senha: ${resetUrl}\n\nEste link expira em 1 hora.\n\nSe você não solicitou a recuperação de senha, ignore este email.`,
-        };
+      text: `Olá ${userName}!\n\nRecebemos uma solicitação para redefinir sua senha.\nAcesse este link para criar uma nova senha: ${resetUrl}\n\nEste link expira em 1 hora.\n\nSe você não solicitou a recuperação de senha, ignore este email.`,
+    };
 
-        try {
-            await this.transporter.sendMail(mailOptions);
-            this.logger.log(`Email de recuperação enviado para: ${to}`);
-        } catch (error) {
-            this.logger.error(`Erro ao enviar email para ${to}:`, error.message);
-        }
+    try {
+      await this.transporter.sendMail(mailOptions);
+      this.logger.log(`Email de recuperação enviado para: ${to}`);
+    } catch (error) {
+      this.logger.error(`Erro ao enviar email para ${to}:`, error.message);
     }
+  }
 
-    async sendPasswordChangedConfirmation(
-        to: string,
-        userName: string,
-    ): Promise<void> {
-        const emailFrom = process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@discool.com';
-        const emailFromName = process.env.EMAIL_FROM_NAME || 'Discool';
+  async sendPasswordChangedConfirmation(
+    to: string,
+    userName: string,
+  ): Promise<void> {
+    const emailFrom =
+      process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@discool.com';
+    const emailFromName = process.env.EMAIL_FROM_NAME || 'Discool';
 
-        const mailOptions: nodemailer.SendMailOptions = {
-            from: `"${emailFromName}" <${emailFrom}>`,
-            to,
-            subject: 'Senha Alterada com Sucesso',
-            html: `
+    const mailOptions: nodemailer.SendMailOptions = {
+      from: `"${emailFromName}" <${emailFrom}>`,
+      to,
+      subject: 'Senha Alterada com Sucesso',
+      html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">Olá, ${userName}!</h2>
           <p>Sua senha foi alterada com sucesso.</p>
@@ -104,14 +109,17 @@ export class EmailService {
           </p>
         </div>
       `,
-            text: `Olá ${userName}!\n\nSua senha foi alterada com sucesso.\n\nSe você não realizou esta alteração, entre em contato com nosso suporte imediatamente.`,
-        };
+      text: `Olá ${userName}!\n\nSua senha foi alterada com sucesso.\n\nSe você não realizou esta alteração, entre em contato com nosso suporte imediatamente.`,
+    };
 
-        try {
-            await this.transporter.sendMail(mailOptions);
-            this.logger.log(`Email de confirmação enviado para: ${to}`);
-        } catch (error) {
-            this.logger.error(`Erro ao enviar email de confirmação para ${to}:`, error.message);
-        }
+    try {
+      await this.transporter.sendMail(mailOptions);
+      this.logger.log(`Email de confirmação enviado para: ${to}`);
+    } catch (error) {
+      this.logger.error(
+        `Erro ao enviar email de confirmação para ${to}:`,
+        error.message,
+      );
     }
+  }
 }

@@ -35,7 +35,7 @@ import { Roles } from '../auth/roles.decorator';
 @ApiTags('Produtos')
 @Controller('produto')
 export class ProdutoController {
-  constructor(private readonly produtoService: ProdutoService) { }
+  constructor(private readonly produtoService: ProdutoService) {}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
@@ -146,7 +146,9 @@ export class ProdutoController {
   async findOneWithDisponivel(@Param('id') id: string) {
     const idNumber = Number(id);
     if (isNaN(idNumber) || idNumber <= 0) {
-      throw new BadRequestException('ID do produto deve ser um número válido e positivo');
+      throw new BadRequestException(
+        'ID do produto deve ser um número válido e positivo',
+      );
     }
     return await this.produtoService.findOneWithDisponivel(+id);
   }

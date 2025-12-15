@@ -13,7 +13,9 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('APIs do Discool')
-    .setDescription('Documentação de uma API para um sistema de e-commerce de Discos')
+    .setDescription(
+      'Documentação de uma API para um sistema de e-commerce de Discos',
+    )
     .setVersion('1.0')
     .addBearerAuth()
     .addTag('Discool')

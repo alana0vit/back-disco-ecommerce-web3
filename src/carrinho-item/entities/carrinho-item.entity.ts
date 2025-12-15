@@ -46,5 +46,4 @@ export class CarrinhoItem {
   })
   @OneToMany(() => ItemPedido, (ip) => ip.carrinhoItem)
   itemPedidos: ItemPedido[];
-
 }
