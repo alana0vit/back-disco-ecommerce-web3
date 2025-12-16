@@ -51,29 +51,21 @@ export class CategoriaController {
     return await this.categoriaService.create(createCategoriaDto);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE', 'ADMIN')
-  @Get()
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Listar todas as categorias' })
+  // Rota pública para listar categorias (sem autenticação)
+  @Get('public')
+  @ApiOperation({ summary: 'Listar todas as categorias (público)' })
   @ApiResponse({
     status: 200,
     description: 'Lista todas as categorias cadastradas no sistema.',
     type: [Categoria],
   })
-  @ApiResponse({
-    status: 403,
-    description: 'Acesso negado.',
-  })
-  async findAll(): Promise<Categoria[]> {
+  async findAllPublic(): Promise<Categoria[]> {
     return await this.categoriaService.findAll();
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE', 'ADMIN')
-  @Get(':id')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Buscar uma categoria pelo ID' })
+  // Rota pública para buscar categoria por ID (sem autenticação)
+  @Get('public/:id')
+  @ApiOperation({ summary: 'Buscar uma categoria pelo ID (público)' })
   @ApiParam({
     name: 'id',
     description: 'ID da categoria que será buscada',
@@ -88,7 +80,7 @@ export class CategoriaController {
     status: 404,
     description: 'Categoria não encontrada.',
   })
-  async findOne(@Param('id') id: string): Promise<Categoria> {
+  async findOnePublic(@Param('id') id: string): Promise<Categoria> {
     const idNumber = Number(id);
     if (isNaN(idNumber) || idNumber <= 0) {
       throw new BadRequestException(

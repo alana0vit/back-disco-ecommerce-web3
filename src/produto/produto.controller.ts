@@ -67,25 +67,21 @@ export class ProdutoController {
     return this.produtoService.create(createProdutoDto, file);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE', 'ADMIN')
-  @Get()
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Listar todos os produtos' })
+  // Rotas públicas (sem autenticação) para produtos
+  @Get('public')
+  @ApiOperation({ summary: 'Listar todos os produtos (público)' })
   @ApiResponse({
     status: 200,
     description: 'Lista de produtos retornada com sucesso',
     type: [Produto],
   })
-  async findAll(): Promise<Produto[]> {
+  async findAllPublic(): Promise<Produto[]> {
     return await this.produtoService.findAll();
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE', 'ADMIN')
-  @Get('filtro')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Filtrar produtos por nome, categoria e preço' })
+  // Filtro público
+  @Get('public/filtro')
+  @ApiOperation({ summary: 'Filtrar produtos (público)' })
   @ApiQuery({
     name: 'nome',
     required: false,
@@ -113,7 +109,7 @@ export class ProdutoController {
     description: 'Lista filtrada de produtos retornada com sucesso',
     type: [Produto],
   })
-  async findWithFilters(
+  async findWithFiltersPublic(
     @Query('nome') nome?: string,
     @Query('categoria') categoria?: string,
     @Query('precoMin') precoMin?: string,
@@ -144,6 +140,22 @@ export class ProdutoController {
   })
   @ApiResponse({ status: 404, description: 'Produto não encontrado' })
   async findOneWithDisponivel(@Param('id') id: string) {
+    const idNumber = Number(id);
+    if (isNaN(idNumber) || idNumber <= 0) {
+      throw new BadRequestException(
+        'ID do produto deve ser um número válido e positivo',
+      );
+    }
+    return await this.produtoService.findOneWithDisponivel(+id);
+  }
+
+  // Buscar produto público por ID (sem autenticação)
+  @Get('public/:id')
+  @ApiOperation({ summary: 'Buscar produto pelo ID (público)' })
+  @ApiParam({ name: 'id', description: 'ID do produto' })
+  @ApiResponse({ status: 200, description: 'Produto retornado com sucesso' })
+  @ApiResponse({ status: 404, description: 'Produto não encontrado' })
+  async findOnePublic(@Param('id') id: string) {
     const idNumber = Number(id);
     if (isNaN(idNumber) || idNumber <= 0) {
       throw new BadRequestException(
