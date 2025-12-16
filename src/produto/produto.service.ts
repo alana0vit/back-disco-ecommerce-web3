@@ -113,10 +113,11 @@ export class ProdutoService {
     categoria?: string,
     precoMin?: number,
     precoMax?: number,
-  ): Promise<Produto[]> {
+  ): Promise<any[]> {
     const query = this.produtoRepository
       .createQueryBuilder('produto')
       .leftJoinAndSelect('produto.categoria', 'categoria')
+      .leftJoinAndSelect('produto.imagem', 'imagem')
       .where('produto.ativo = :ativo', { ativo: true });
     if (nome) {
       query.andWhere('LOWER(produto.nome) LIKE LOWER(:nome)', {
@@ -141,12 +142,16 @@ export class ProdutoService {
       query.andWhere('produto.preco <= :precoMax', { precoMax });
     }
     const produtos = await query.getMany();
-    if (produtos.length === 0) {
-      throw new NotFoundException(
-        'Nenhum produto encontrado com os filtros informados!',
-      );
-    }
-    return produtos;
+    // Mapeia para incluir imagemUrl e campos de estoque como em findAll
+    return produtos.map((produto) => ({
+      ...produto,
+      imagemUrl: produto.imagem
+        ? this.getImageUrl(produto.imagem.caminho)
+        : null,
+      estoqueDisponivel: produto.estoqueDisponivel,
+      estoqueReservado: produto.estoqueReservado,
+      estoqueTotal: produto.estoque,
+    }));
   }
 
   async update(
