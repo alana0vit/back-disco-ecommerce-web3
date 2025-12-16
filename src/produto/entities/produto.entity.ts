@@ -70,8 +70,8 @@ export class Produto {
     nullable: true,
     description: 'Imagem do produto',
   })
-  @OneToOne(() => Imagem, { nullable: true, eager: true, onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'id_imagem' })
+  @OneToOne(() => Imagem, imagem => imagem.produto, { nullable: true, eager: false, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'id_imagem', referencedColumnName: 'idImagem' })
   imagem?: Imagem | null;
 
   @ApiProperty({

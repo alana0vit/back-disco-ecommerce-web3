@@ -22,6 +22,6 @@ import { LimpezaReservasCronService } from './limpeza-reservas-cron.service';
     ReservaEstoqueService,
     LimpezaReservasCronService,
   ],
-  exports: [ReservaEstoqueService, LimpezaReservasCronService],
+  exports: [ReservaEstoqueService, LimpezaReservasCronService, ProdutoService, TypeOrmModule],
 })
 export class ProdutoModule {}

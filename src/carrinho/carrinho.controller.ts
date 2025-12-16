@@ -32,7 +32,7 @@ export class CarrinhoController {
 
   @Post(':idCliente/add')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('CLIENTE')
+  @Roles('CLIENTE', 'ADMIN')
   addItem(
     @Param('idCliente') idCliente: number,
     @Body() dto: CreateCarrinhoItemDto,

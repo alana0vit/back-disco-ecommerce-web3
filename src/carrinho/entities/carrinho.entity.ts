@@ -8,6 +8,7 @@ import {
   JoinColumn,
   OneToMany,
   Column,
+  ManyToOne,
 } from 'typeorm';
 import { Pedido } from 'src/pedido/entities/pedido.entity';
 
@@ -29,7 +30,7 @@ export class Carrinho {
   convertidoEmPedido: boolean;
 
   @ApiProperty({ type: () => Cliente })
-  @OneToOne(() => Cliente, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Cliente, cliente => cliente.carrinhos)
   @JoinColumn({ name: 'id_cliente' })
   cliente: Cliente;
 

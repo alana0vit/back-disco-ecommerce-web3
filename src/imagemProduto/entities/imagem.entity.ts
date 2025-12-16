@@ -29,5 +29,5 @@ export class Imagem {
   @OneToOne(() => Produto, (produto) => produto.imagem, {
     onDelete: 'CASCADE',
   })
-  produto: Produto;
+  produto?: Produto;
 }

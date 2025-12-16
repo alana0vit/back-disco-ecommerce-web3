@@ -45,7 +45,6 @@ export class CarrinhoItemService {
       );
     }
 
-    // Se já existir item no carrinho para o mesmo produto, incrementar quantidade
     const existente = carrinho.itens.find(
       (i) => i.produto.idProduto === produto.idProduto,
     );
@@ -82,8 +81,8 @@ export class CarrinhoItemService {
 
   async findOne(idItem: number): Promise<CarrinhoItem> {
     const item = await this.itemRepo.findOne({
-      where: { idItem },
-      relations: ['produto', 'carrinho'],
+      where: { idItem},
+      relations: ['produto', 'carrinho', 'imagem'],
     });
     if (!item) throw new NotFoundException('Item do carrinho não encontrado');
     return item;

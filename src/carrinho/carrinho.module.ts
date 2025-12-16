@@ -13,5 +13,6 @@ import { Produto } from 'src/produto/entities/produto.entity';
   ],
   controllers: [CarrinhoController],
   providers: [CarrinhoService],
+  exports: [CarrinhoService, TypeOrmModule]
 })
 export class CarrinhoModule {}

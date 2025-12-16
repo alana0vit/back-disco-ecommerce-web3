@@ -33,12 +33,6 @@ export class EnderecoService {
     return this.enderecoRepository.save(endereco);
   }
 
-  async findAll(): Promise<Endereco[]> {
-    return await this.enderecoRepository.find({
-      relations: ['cliente', 'pedido'],
-    });
-  }
-
   async findByCliente(idCliente: number): Promise<Endereco[]> {
     return await this.enderecoRepository.find({
       where: { cliente: { idCliente } },

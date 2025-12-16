@@ -31,14 +31,33 @@ export class PagamentoService {
 
     private readonly reservaEstoqueService: ReservaEstoqueService,
     private readonly pedidoService: PedidoService,
-  ) {}
+  ) { }
 
   async create(dto: CreatePagamentoDto): Promise<Pagamento> {
     const { idPedido, valor, metodoPag } = dto;
 
     const pedido = await this.pedidoRepository.findOne({
-      where: { idPedido },
+      where: { idPedido: dto.idPedido },
       relations: ['pagamento', 'itemPedidos', 'itemPedidos.produto'],
+      select: {
+        idPedido: true,
+        statusPedido: true,
+        valorTotal: true,
+        pagamento: {
+          idPag: true,
+          statusPag: true,
+        },
+        itemPedidos: {
+          idItem: true,
+          quantidade: true,
+          produto: {
+            idProduto: true,
+            estoque: true,
+            estoqueReservado: true,
+            preco: true,
+          },
+        },
+      },
     });
 
     if (!pedido) {

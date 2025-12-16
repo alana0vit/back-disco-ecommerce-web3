@@ -26,24 +26,86 @@ export class CarrinhoService {
 
     @InjectRepository(Produto)
     private produtoRepo: Repository<Produto>,
-  ) {}
+  ) { }
 
   async getOrCreateCarrinho(idCliente: number): Promise<Carrinho> {
-    const cliente = await this.clienteRepo.findOne({ where: { idCliente } });
-    if (!cliente) throw new NotFoundException('Cliente não encontrado');
-
-    let carrinho = await this.carrinhoRepo.findOne({
-      where: { cliente },
-      relations: ['itens'],
+    const cliente = await this.clienteRepo.findOne({
+      where: { idCliente }
     });
 
+    if (!cliente) {
+      throw new NotFoundException('Cliente não encontrado');
+    }
+
+    // PRIMEIRO: Tente buscar usando query mais específica
+    let carrinho = await this.carrinhoRepo
+      .createQueryBuilder('carrinho')
+      .leftJoinAndSelect('carrinho.cliente', 'cliente')
+      .leftJoinAndSelect('carrinho.itens', 'itens')
+      .leftJoinAndSelect('itens.produto', 'produto')
+      .where('cliente.idCliente = :idCliente', { idCliente })
+      .getOne();
+
+    // SEGUNDO: Se não encontrou, tente com findOne normal
+    if (!carrinho) {
+      carrinho = await this.carrinhoRepo.findOne({
+        where: { cliente: { idCliente } },
+        relations: ['itens', 'itens.produto'],
+      });
+    }
+
+    // TERCEIRO: Se ainda não encontrou, CRIE
     if (!carrinho) {
       carrinho = this.carrinhoRepo.create({
         cliente,
         total: 0,
+        convertidoEmPedido: false,
         itens: [],
       });
-      await this.carrinhoRepo.save(carrinho);
+
+      try {
+        carrinho = await this.carrinhoRepo.save(carrinho);
+
+        // Recarregue com relações após salvar
+        const carrinhoRecarregado = await this.carrinhoRepo.findOne({
+          where: { idCarrinho: carrinho.idCarrinho },
+          relations: ['itens', 'itens.produto'],
+        });
+
+        // GARANTIR que não é null
+        if (!carrinhoRecarregado) {
+          throw new Error('Erro ao criar carrinho: carrinho não encontrado após criação');
+        }
+
+        carrinho = carrinhoRecarregado;
+      } catch (error) {
+        // Se der erro de duplicidade (cliente já tem carrinho)
+        if (error.code === 'ER_DUP_ENTRY' || error.errno === 1062) {
+          // Busque o carrinho que já existe
+          const carrinhoExistente = await this.carrinhoRepo
+            .createQueryBuilder('carrinho')
+            .leftJoinAndSelect('carrinho.cliente', 'cliente')
+            .leftJoinAndSelect('carrinho.itens', 'itens')
+            .leftJoinAndSelect('itens.produto', 'produto')
+            .where('cliente.idCliente = :idCliente', { idCliente })
+            .getOne();
+
+          if (!carrinhoExistente) {
+            throw new NotFoundException(
+              'Erro de duplicidade detectado, mas carrinho não encontrado'
+            );
+          }
+
+          carrinho = carrinhoExistente;
+        } else {
+          // Se for outro erro, propague
+          throw error;
+        }
+      }
+    }
+
+    if (!carrinho) {
+      throw new Error('Erro crítico: Carrinho não pôde ser criado ou encontrado');
     }
 
     return carrinho;
