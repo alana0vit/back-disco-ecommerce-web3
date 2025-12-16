@@ -54,6 +54,18 @@ export class EnderecoController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CLIENTE', 'ADMIN')
+  @Get('cliente/:idCliente')
+  @ApiOperation({ summary: 'Lista endereços por cliente' })
+  @ApiParam({ name: 'idCliente', type: Number, description: 'ID do cliente' })
+  @ApiResponse({ status: 200, description: 'Lista retornada com sucesso' })
+  async findByCliente(
+    @Param('idCliente', ParseIntPipe) idCliente: number,
+  ): Promise<Endereco[]> {
+    return await this.enderecoService.findByCliente(idCliente);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('CLIENTE', 'ADMIN')
   @Get(':id')
   @ApiOperation({ summary: 'Busca um endereço pelo ID' })
   @ApiParam({ name: 'id', type: Number, description: 'ID do endereço' })
