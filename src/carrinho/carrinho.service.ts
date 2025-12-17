@@ -74,8 +74,6 @@ export class CarrinhoService {
           where: { idCarrinho: carrinho.idCarrinho },
           relations: ['itens', 'itens.produto'],
         });
-
-        // GARANTIR que não é null
         if (!carrinhoRecarregado) {
           throw new Error(
             'Erro ao criar carrinho: carrinho não encontrado após criação',
@@ -84,9 +82,7 @@ export class CarrinhoService {
 
         carrinho = carrinhoRecarregado;
       } catch (error) {
-        // Se der erro de duplicidade (cliente já tem carrinho)
         if (error.code === 'ER_DUP_ENTRY' || error.errno === 1062) {
-          // Busque o carrinho que já existe
           const carrinhoExistente = await this.carrinhoRepo
             .createQueryBuilder('carrinho')
             .leftJoinAndSelect('carrinho.cliente', 'cliente')
@@ -106,7 +102,6 @@ export class CarrinhoService {
 
           carrinho = carrinhoExistente;
         } else {
-          // Se for outro erro, propague
           throw error;
         }
       }
@@ -118,7 +113,6 @@ export class CarrinhoService {
       );
     }
 
-    // Se por alguma razão retornou um carrinho já convertido, crie um novo
     if (carrinho.convertidoEmPedido) {
       const novo = this.carrinhoRepo.create({
         cliente,

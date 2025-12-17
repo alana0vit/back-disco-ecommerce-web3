@@ -28,7 +28,7 @@ import { CarrinhoItemModule } from './carrinho-item/carrinho-item.module';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
+      useFactory: async (configService: ConfigService) => ({
         type: 'mysql',
         host: configService.get<string>('DB_HOST'),
         port: parseInt(configService.getOrThrow<string>('DB_PORT'), 10),
@@ -40,7 +40,7 @@ import { CarrinhoItemModule } from './carrinho-item/carrinho-item.module';
           idleTimeoutMillis: 30000,
         },
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: false,
+        synchronize: true,
       }),
       inject: [ConfigService],
     }),
