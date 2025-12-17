@@ -26,11 +26,11 @@ export class CarrinhoService {
 
     @InjectRepository(Produto)
     private produtoRepo: Repository<Produto>,
-  ) { }
+  ) {}
 
   async getOrCreateCarrinho(idCliente: number): Promise<Carrinho> {
     const cliente = await this.clienteRepo.findOne({
-      where: { idCliente }
+      where: { idCliente },
     });
 
     if (!cliente) {
@@ -44,12 +44,15 @@ export class CarrinhoService {
       .leftJoinAndSelect('carrinho.itens', 'itens')
       .leftJoinAndSelect('itens.produto', 'produto')
       .where('cliente.idCliente = :idCliente', { idCliente })
+      .andWhere('carrinho.convertidoEmPedido = :convertido', {
+        convertido: false,
+      })
       .getOne();
 
     // SEGUNDO: Se não encontrou, tente com findOne normal
     if (!carrinho) {
       carrinho = await this.carrinhoRepo.findOne({
-        where: { cliente: { idCliente } },
+        where: { cliente: { idCliente }, convertidoEmPedido: false },
         relations: ['itens', 'itens.produto'],
       });
     }
@@ -74,7 +77,9 @@ export class CarrinhoService {
 
         // GARANTIR que não é null
         if (!carrinhoRecarregado) {
-          throw new Error('Erro ao criar carrinho: carrinho não encontrado após criação');
+          throw new Error(
+            'Erro ao criar carrinho: carrinho não encontrado após criação',
+          );
         }
 
         carrinho = carrinhoRecarregado;
@@ -88,11 +93,14 @@ export class CarrinhoService {
             .leftJoinAndSelect('carrinho.itens', 'itens')
             .leftJoinAndSelect('itens.produto', 'produto')
             .where('cliente.idCliente = :idCliente', { idCliente })
+            .andWhere('carrinho.convertidoEmPedido = :convertido', {
+              convertido: false,
+            })
             .getOne();
 
           if (!carrinhoExistente) {
             throw new NotFoundException(
-              'Erro de duplicidade detectado, mas carrinho não encontrado'
+              'Erro de duplicidade detectado, mas carrinho não encontrado',
             );
           }
 
@@ -105,7 +113,28 @@ export class CarrinhoService {
     }
 
     if (!carrinho) {
-      throw new Error('Erro crítico: Carrinho não pôde ser criado ou encontrado');
+      throw new Error(
+        'Erro crítico: Carrinho não pôde ser criado ou encontrado',
+      );
+    }
+
+    // Se por alguma razão retornou um carrinho já convertido, crie um novo
+    if (carrinho.convertidoEmPedido) {
+      const novo = this.carrinhoRepo.create({
+        cliente,
+        total: 0,
+        convertidoEmPedido: false,
+        itens: [],
+      });
+      const salvo = await this.carrinhoRepo.save(novo);
+      const recarregado = await this.carrinhoRepo.findOne({
+        where: { idCarrinho: salvo.idCarrinho },
+        relations: ['itens', 'itens.produto'],
+      });
+      if (!recarregado) {
+        throw new Error('Falha ao criar novo carrinho após conversão');
+      }
+      return recarregado;
     }
 
     return carrinho;
